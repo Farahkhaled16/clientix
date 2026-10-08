@@ -1,0 +1,43 @@
+﻿@page "/Notifications"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business,agency")]
+@model BrokerHub.Pages.Notifications.IndexModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+@functions {
+    string Icon(string t) => t switch
+    {
+        "approved" => "✅",
+        "rejected" => "❌",
+        "cancelled" => "🚫",
+        "reminder" => "⏰",
+        "chat" => "💬",
+        _ => "🔔"
+    };
+}
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["notif.title"]</h1>
+</section>
+
+<div class="panel" style="max-width:740px;margin:0 auto 70px">
+    @if (!Model.Items.Any())
+    {
+        <p class="muted">@T["notif.none"]</p>
+    }
+    <ul class="feed">
+        @foreach (var n in Model.Items)
+        {
+            <li class="feed-item @(n.Read ? "" : "unread")">
+                <a class="feed-link" href="@n.Link">
+                    <div class="feed-ico">@Icon(n.Type)</div>
+                    <div>
+                        <b>@T["n." + n.Type]</b>
+                        <span>@n.Body</span>
+                        <time>@AppTime.ToLocal(n.CreatedAt).ToString("d MMM, h:mm tt", Model.Cult)</time>
+                    </div>
+                </a>
+            </li>
+        }
+    </ul>
+</div>

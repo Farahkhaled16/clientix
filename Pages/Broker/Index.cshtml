@@ -8,7 +8,7 @@
     string Icon(string t) => t switch
     {
         "visit" => "👀", "register" => "🆕", "login" => "🔑",
-        "meeting" => "📅", "agency" => "🏢", "chat" => "💬", _ => "🔔"
+        "meeting" => "📅", "agency" => "🏢", "reminder" => "⏰", _ => "🔔"
     };
 }
 
@@ -17,7 +17,10 @@
         <h1>@T["bk.title"]</h1>
         <p>@T["bk.sub"]</p>
     </div>
-    <a class="btn btn-white" href="/Broker/Edit">+ @T["bk.add"]</a>
+    <div class="links-bar" style="margin:0">
+        <a class="btn btn-white" href="/Broker/Edit">+ @T["bk.add"]</a>
+        <a class="btn btn-white" href="/Calendar">📆 @T["nav.calendar"]</a>
+    </div>
 </section>
 
 <section class="stats">
@@ -132,7 +135,7 @@
 document.addEventListener('broker-notify', function (e) {
   var n = e.detail, feed = document.getElementById('feed'), t = document.getElementById('toasts');
   if (!feed) return;
-  var icons = { visit: '👀', register: '🆕', login: '🔑', meeting: '📅', agency: '🏢', chat: '💬' };
+          var icons = { visit: '👀', register: '🆕', login: '🔑', meeting: '📅', agency: '🏢', chat: '💬', reminder: '⏰' };
   var li = document.createElement('li');
   li.className = 'feed-item unread';
   li.innerHTML = '<div class="feed-ico"></div><div><b></b><span></span><time></time></div>';

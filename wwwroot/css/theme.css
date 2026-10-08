@@ -1923,44 +1923,445 @@ img, video {
         padding: 11px 20px;
     }
 }
-/* ----- Navbar على الموبايل: 3 روابط في الصف ----- */
-@media (max-width: 800px) {
+/* ================= Mobile & responsive ================= */
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: clip;
+}
+
+/* grids that never overflow small screens */
+.cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.agency-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+.role-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.works-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
+
+/* nav links (desktop: text only) */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-link .ico {
+    display: none;
+}
+
+.nav-link.bell .ico {
+    display: inline;
+}
+
+.nav-link.bell .lbl {
+    display: none;
+}
+
+.nav-link.active {
+    color: #fff;
+    background: rgba(255,255,255,.12);
+}
+
+.back-link {
+    display: none;
+}
+
+[dir="rtl"] .back-arrow {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
+@media (max-width: 760px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    /* backdrop-filter would trap the fixed tab bar inside the header */
+    .nav {
+        padding: 10px 0;
+        background: var(--c-slate);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+        .nav .container {
+            flex-wrap: nowrap;
+        }
+
+    .logo img {
+        height: 30px;
+    }
+
     .nav-actions {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 6px;
+    }
+
+    .lang-switch {
+        padding: 6px 12px;
+        font-size: .85rem;
+    }
+
+    /* bottom tab bar for signed-in users */
+    .nav-links.tabs {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        justify-content: space-around;
+        gap: 0;
+        background: rgba(38,49,58,.97);
+        border-top: 1px solid rgba(156,175,128,.25);
+        padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+
+        .nav-links.tabs .nav-link {
+            position: relative;
+            flex: 1;
+            min-height: 54px;
+            padding: 6px 4px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: .72rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+            .nav-links.tabs .nav-link .ico {
+                display: block;
+                font-size: 1.3rem;
+                line-height: 1;
+            }
+
+            .nav-links.tabs .nav-link.bell .lbl {
+                display: block;
+            }
+
+            .nav-links.tabs .nav-link.active {
+                background: rgba(156,175,128,.22);
+                color: var(--c-sage);
+            }
+
+        .nav-links.tabs .bell-badge {
+            top: 2px;
+            inset-inline-start: calc(50% + 6px);
+            inset-inline-end: auto;
+        }
+
+    body.has-tabs .footer {
+        padding-bottom: calc(28px + 78px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .toasts {
+        inset-inline: 12px;
+        max-width: none;
+        bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* touch targets, no iOS zoom on inputs */
+    .btn {
+        min-height: 44px;
+    }
+
+    .btn-sm {
+        min-height: 38px;
+    }
+
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+
+    /* home */
+    .hero {
+        padding: 36px 0 16px;
+    }
+
+    .hero-stack {
+        margin-top: 40px;
+    }
+
+        .hero-stack::before, .hero-stack::after, .hero-panel {
+            border-radius: 26px;
+        }
+
+    .hero-panel {
+        padding: 44px 20px 96px;
+    }
+
+    .role-grid {
+        margin: -56px auto 40px;
+        padding: 0;
+        gap: 16px;
+    }
+
+    .role-card {
+        padding: 26px 22px;
+        border-radius: 24px;
+    }
+
+        .role-card.alt {
+            transform: none;
+        }
+
+        .role-card .btn {
+            align-self: stretch;
+        }
+
+    /* forms */
+    .form-box {
+        margin: 28px 0;
+        padding: 30px 20px 24px;
+        border-radius: 24px;
+    }
+
+        .form-box.wide {
+            margin: 16px 0;
+        }
+
+    .alert.wide {
+        margin: 10px 0;
+    }
+
+    .row2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* dashboards */
+    .dash-banner {
+        padding: 28px 20px 84px;
+        border-radius: 26px;
+        margin-top: 16px;
+    }
+
+        .dash-banner .btn, .dash-banner .links-bar {
+            width: 100%;
+        }
+
+            .dash-banner .links-bar .btn {
+                flex: 1;
+            }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin: -56px 0 22px;
+    }
+
+    .stat {
+        padding: 14px;
+        gap: 10px;
+        border-radius: 18px;
+    }
+
+    .stat-ico {
+        width: 40px;
+        height: 40px;
+        font-size: 1.15rem;
+    }
+
+    .stat b {
+        font-size: 1.4rem;
+    }
+
+    .stat span {
+        font-size: .78rem;
+    }
+
+    .panel {
+        padding: 18px;
+        border-radius: 22px;
+    }
+
+    .meet {
+        flex-wrap: wrap;
+    }
+
+    .meet-actions {
         width: 100%;
     }
 
-        .nav-actions > .nav-link,
-        .nav-actions > .lang-switch,
-        .nav-actions > form {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 38px;
-            padding: 6px 8px;
-            font-size: .85rem;
-            border-radius: 12px;
-            white-space: nowrap;
+        .meet-actions .btn {
+            flex: 1;
         }
 
-        /* شكل التابات */
-        .nav-actions > .nav-link {
-            background: rgba(255,255,255,.07);
+    .next-card {
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+    .hscroll .agency-card {
+        flex-basis: 78%;
+    }
+
+    .section-title {
+        margin-top: 32px;
+    }
+
+    /* agency pages */
+    .agency-grid {
+        gap: 20px;
+        padding-bottom: 50px;
+    }
+
+    .profile-banner {
+        border-radius: 26px;
+    }
+
+    .profile-head {
+        margin: -64px 0 0;
+        border-radius: 24px;
+        padding: 0 18px 24px;
+    }
+
+    .profile-avatar {
+        width: 92px;
+        height: 92px;
+        margin-top: -46px;
+        border-radius: 24px;
+        font-size: 2.1rem;
+    }
+
+    .profile-actions .btn {
+        flex: 1 1 calc(50% - 10px);
+    }
+
+    .profile-actions .sep {
+        display: none;
+    }
+
+    /* chat */
+    .chat-shell {
+        height: calc(100dvh - 250px);
+        min-height: 380px;
+        border-radius: 22px;
+        margin-bottom: 20px;
+    }
+
+    .chat-layout {
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+        .chat-layout .chat-shell {
+            height: calc(100dvh - 230px);
         }
 
-        /* زرار تسجيل الخروج جوه الفورم ياخد الخانة كلها */
-        .nav-actions > form {
-            padding: 0;
-            border: 0;
+        .chat-layout.open .chat-list {
+            display: none;
         }
 
-            .nav-actions > form .lang-switch {
-                width: 100%;
-                height: 100%;
-                min-height: 38px;
-                border-radius: 12px;
-            }
+        .chat-layout:not(.open) .chat-shell {
+            display: none;
+        }
+
+    .chat-list {
+        max-height: none;
+    }
+
+    .back-link {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: rgba(255,255,255,.14);
+        color: #fff;
+    }
+
+    .bubble {
+        max-width: 86%;
+    }
+}
+
+@media (max-width: 420px) {
+    /* visitors: logo + language + login only */
+    .nav-links:not(.tabs) .nav-link {
+        display: none;
+    }
+}
+.feed-link {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.feed-item {
+    padding: 0;
+}
+
+    .feed-item .feed-link {
+        padding: 10px 12px;
+        border-radius: 14px;
+    }
+
+.chip {
+    display: inline-block;
+    margin-top: 6px;
+}
+.cal-stack {
+    max-width: 740px;
+    margin: 0 auto 70px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.cal-card h2 {
+    font-size: 1.1rem;
+    color: var(--c-deep);
+    margin-bottom: 4px;
+}
+
+.cal-card .btn {
+    margin-top: 12px;
+}
+
+.copy-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+    .copy-row input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        font-size: .85rem;
+        background: #fbfcfa;
+        direction: ltr;
+    }
+
+    .copy-row .btn {
+        margin: 0;
+    }
+
+.tips {
+    padding-inline-start: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--muted);
+    font-size: .92rem;
+}
+
+.chip {
+    margin-inline-end: 6px;
 }

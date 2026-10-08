@@ -3,3 +3,4 @@ obj/
 .vs/
 firebase-key.json
 appsettings.Development.json
+appsettings.Production.json

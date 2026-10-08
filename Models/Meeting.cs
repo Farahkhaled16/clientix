@@ -12,6 +12,7 @@ public class Meeting
     [FirestoreProperty] public string AgencyId { get; set; } = "";
     [FirestoreProperty] public string AgencyName { get; set; } = "";
     [FirestoreProperty] public string Note { get; set; } = "";
+    [FirestoreProperty] public string Lang { get; set; } = "ar";          // لغة الـ Business وقت الحجز
     [FirestoreProperty] public DateTime StartsAt { get; set; }            // UTC
     [FirestoreProperty] public string Status { get; set; } = "pending";   // pending | approved | rejected | cancelled
     [FirestoreProperty] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

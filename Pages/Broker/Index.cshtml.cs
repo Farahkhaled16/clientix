@@ -17,9 +17,9 @@ public class AgencyRow
 public class IndexModel : PageModel
 {
     private readonly FirestoreService _fs;
-    private readonly EmailService _mail;
+    private readonly NotifyService _notify;
     private readonly Translator _t;
-    public IndexModel(FirestoreService fs, EmailService mail, Translator t) { _fs = fs; _mail = mail; _t = t; }
+    public IndexModel(FirestoreService fs, NotifyService notify, Translator t) { _fs = fs; _notify = notify; _t = t; }
 
     public List<AgencyRow> Items { get; set; } = new();
     public List<Meeting> Pending { get; set; } = new();
@@ -68,19 +68,16 @@ public class IndexModel : PageModel
             var all = await _fs.GetMeetings();
             if (all.Any(x => x.Id != m.Id && x.Status == "approved" && Math.Abs((x.StartsAt - m.StartsAt).TotalMinutes) < 30))
                 return RedirectToPage(new { msg = "meet.conflict" });
+
+            // لو الميعاد قريب، منبعتش تذكير فات وقته
+            var diff = m.StartsAt - DateTime.UtcNow;
+            m.ReminderDaySent = diff <= TimeSpan.FromHours(24);
+            m.ReminderHourSent = diff <= TimeSpan.FromHours(1);
         }
 
         m.Status = decision;
         await _fs.UpdateMeeting(m);
-
-        try
-        {
-            var when = AppTime.ToLocal(m.StartsAt).ToString("dddd d MMMM yyyy, h:mm tt", Cult);
-            var body = $"{_t[decision == "approved" ? "mail.meet.ok" : "mail.meet.no"]} {when}";
-            await _mail.SendCustom(m.BusinessEmail, _t["mail.meet.subject"], body,
-                _t["mail.open"], $"{Request.Scheme}://{Request.Host}/Meetings/Mine");
-        }
-        catch { }
+        await _notify.MeetingDecision(m, decision);
 
         return RedirectToPage(new { msg = "meet.updated" });
     }

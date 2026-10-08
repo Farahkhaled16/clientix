@@ -17,4 +17,7 @@ public class MineModel : PageModel
 
     public async Task OnGetAsync() =>
         Items = await _fs.GetMeetingsByBusiness(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    public string GCal(Meeting m) => Ics.GoogleUrl(m, _t["meet.ics.title"],
+        string.IsNullOrEmpty(m.AgencyName) ? _t["meet.general"] : m.AgencyName);
 }

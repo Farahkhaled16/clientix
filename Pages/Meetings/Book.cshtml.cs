@@ -10,7 +10,8 @@ public class BookModel : PageModel
 {
     private readonly FirestoreService _fs;
     private readonly NotifyService _notify;
-    public BookModel(FirestoreService fs, NotifyService notify) { _fs = fs; _notify = notify; }
+    private readonly Translator _t;
+    public BookModel(FirestoreService fs, NotifyService notify, Translator t) { _fs = fs; _notify = notify; _t = t; }
 
     [BindProperty(SupportsGet = true)] public string? AgencyId { get; set; }
     public string? AgencyName { get; set; }
@@ -50,6 +51,7 @@ public class BookModel : PageModel
             AgencyId = AgencyId ?? "",
             AgencyName = AgencyName ?? "",
             Note = note ?? "",
+            Lang = _t.Lang,
             StartsAt = utc
         };
         await _fs.CreateMeeting(meeting);

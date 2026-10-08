@@ -19,6 +19,8 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<NotifyService>();
 builder.Services.AddSingleton<FileStorage>();
 builder.Services.AddHttpClient<AutofillService>();
+builder.Services.AddHostedService<ReminderService>();
+builder.Services.AddSingleton<CalendarLinks>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -28,19 +30,12 @@ builder.Services
         o.AccessDeniedPath = "/";
         o.ExpireTimeSpan = TimeSpan.FromDays(7);
     })
-    .AddCookie("External")   // كوكي مؤقت أثناء الدخول بجوجل
+    .AddCookie("External")
     .AddGoogle(o =>
     {
         o.ClientId = builder.Configuration["Google:ClientId"]!;
         o.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
         o.SignInScheme = "External";
-
-        // يجبر جوجل يعرض شاشة اختيار الحساب (Choose an account / Use another account)
-        o.Events.OnRedirectToAuthorizationEndpoint = ctx =>
-        {
-            ctx.Response.Redirect(ctx.RedirectUri + "&prompt=select_account");
-            return Task.CompletedTask;
-        };
     });
 
 var app = builder.Build();
@@ -101,6 +96,69 @@ app.MapPost("/logout", async (HttpContext ctx) =>
     return Results.Redirect("/");
 }).DisableAntiforgery();
 
+// ملف التقويم (.ics) للميعاد المؤكد
+app.MapGet("/meetings/ics/{id}", async (string id, HttpContext ctx, FirestoreService fs, Translator t) =>
+{
+    if (ctx.User.Identity?.IsAuthenticated != true) return Results.Redirect("/Account/Login");
+
+    var m = await fs.GetMeeting(id);
+    if (m == null || m.Status != "approved") return Results.NotFound();
+
+    var uid = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var allowed = ctx.User.IsInRole("broker") || m.BusinessId == uid || m.AgencyId == uid;
+    if (!allowed) return Results.NotFound();
+
+    return Results.File(Ics.ForMeeting(m, t, t.Lang), "text/calendar", "clientix-meeting.ics");
+});
+
+// للتجربة فقط (في Development): /dev/remind/{meetingId}?kind=day أو hour
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/dev/remind/{id}", async (string id, string? kind, FirestoreService fs, NotifyService n) =>
+    {
+        var m = await fs.GetMeeting(id);
+        if (m == null) return Results.NotFound();
+        await n.Reminder(m, kind == "day" ? "day" : "hour");
+        return Results.Ok("sent");
+    });
+}
+
+// اشتراك التقويم: /cal/{token}/clientix.ics
+app.MapGet("/cal/{token}/clientix.ics", async (string token, string? lang,
+    FirestoreService fs, CalendarLinks links, Translator t) =>
+{
+    var parsed = links.Parse(token);
+    if (parsed is null) return Results.NotFound();
+    var (role, id) = parsed.Value;
+    var l = lang == "en" ? "en" : "ar";
+
+    var from = DateTime.UtcNow.AddDays(-30);
+    var all = (await fs.GetMeetings()).Where(m => m.StartsAt > from);
+
+    IEnumerable<Meeting> mine = role switch
+    {
+        "business" => all.Where(m => m.BusinessId == id && (m.Status == "approved" || m.Status == "pending")),
+        "agency" => all.Where(m => m.AgencyId == id && m.Status == "approved"),
+        "broker" => all.Where(m => m.Status == "approved" || m.Status == "pending"),
+        _ => Enumerable.Empty<Meeting>()
+    };
+
+    var bytes = Ics.Feed(mine, t.Get("cal.name", l), m =>
+    {
+        var agency = string.IsNullOrEmpty(m.AgencyName) ? t.Get("meet.general", l) : m.AgencyName;
+        var pending = m.Status == "pending";
+        var suffix = pending ? " " + t.Get("cal.pending", l) : "";
+        return role switch
+        {
+            "agency" => ($"{t.Get("cal.with", l)} {m.BusinessName}", agency, false),
+            "broker" => ($"{m.BusinessName} - {agency}{suffix}", m.Note ?? "", pending),
+            _ => (t.Get("meet.ics.title", l) + suffix, agency, pending)
+        };
+    }, t.Get("meet.ics.alarm", l));
+
+    return Results.File(bytes, "text/calendar; charset=utf-8");
+});
+
 // الدخول بجوجل
 app.MapGet("/google-login", (string? role, string? returnUrl) =>
 {
@@ -140,6 +198,7 @@ app.MapGet("/google-callback", async (string? role, string? returnUrl, HttpConte
 // SignalR hubs
 app.MapHub<NotificationsHub>("/hubs/notifications");
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<UserHub>("/hubs/user");
 
 app.MapRazorPages();
 app.Run();

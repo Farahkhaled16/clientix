@@ -12,6 +12,8 @@ public class Translator
 
     public string this[string key] =>
         Texts.TryGetValue(key, out var v) ? (Lang == "ar" ? v.ar : v.en) : key;
+    public string Get(string key, string lang) =>
+    Texts.TryGetValue(key, out var v) ? (lang == "en" ? v.en : v.ar) : key;
 
     // كل النصوص هنا. أي نص جديد بنضيفه في السطر بتاعه
     private static readonly Dictionary<string, (string ar, string en)> Texts = new()
@@ -220,6 +222,51 @@ public class Translator
         ["ag.nomeet"] = ("لا توجد مواعيد مؤكدة بعد", "No confirmed meetings yet"),
         ["ag.profile"] = ("ملخص بروفايلك", "Your profile summary"),
         ["ag.who"] = ("العميل", "Client"),
+        ["nav.chat"] = ("المحادثة", "Chat"),
+        ["nav.alerts"] = ("الإشعارات", "Alerts"),
+        ["n.approved"] = ("تم تأكيد ميعادك", "Meeting confirmed"),
+        ["n.rejected"] = ("تعذّر ميعادك", "Meeting declined"),
+        ["n.cancelled"] = ("تم إلغاء ميعاد", "Meeting cancelled"),
+        ["n.reminder"] = ("تذكير بميعاد", "Meeting reminder"),
+
+        ["rem.day"] = ("تذكير: ميعادك بعد 24 ساعة مع", "Reminder: your meeting is in 24 hours with"),
+        ["rem.hour"] = ("تذكير: ميعادك بعد ساعة مع", "Reminder: your meeting starts in 1 hour with"),
+        ["rem.day.subj"] = ("ميعادك بكرة", "Your meeting is tomorrow"),
+        ["rem.hour.subj"] = ("ميعادك بعد ساعة", "Your meeting starts in 1 hour"),
+
+        ["mail.meet.cancel"] = ("تم إلغاء ميعادك:", "Your meeting has been cancelled:"),
+        ["mail.view"] = ("عرض الميعاد", "View meeting"),
+        ["meet.addcal"] = ("أضف للتقويم", "Add to calendar"),
+        ["meet.ics.title"] = ("ميعاد مع الوسيط - كلاينتيكس", "Meeting with the broker - Clientix"),
+        ["meet.ics.alarm"] = ("تذكير بميعادك", "Meeting reminder"),
+
+        ["notif.title"] = ("الإشعارات", "Notifications"),
+        ["notif.none"] = ("لا توجد إشعارات بعد", "No notifications yet"),
+        ["cal.name"] = ("مواعيد كلاينتيكس", "Clientix meetings"),
+        ["cal.with"] = ("ميعاد مع", "Meeting with"),
+        ["cal.pending"] = ("(في انتظار التأكيد)", "(awaiting confirmation)"),
+        ["meet.gcal"] = ("أضف لجوجل كالندر", "Add to Google Calendar"),
+        ["nav.calendar"] = ("ربط التقويم", "Sync calendar"),
+
+        ["cal.title"] = ("ربط تقويم الموبايل", "Connect your phone calendar"),
+        ["cal.sub"] = ("اشترك مرة واحدة، وكل مواعيدك على Clientix هتظهر في تقويم موبايلك لوحدها ومعاها تنبيهات.",
+                  "Subscribe once and all your Clientix meetings appear in your phone calendar, with alerts."),
+        ["cal.local"] = ("الاشتراك بيشتغل لما الموقع يبقى أونلاين، لأن جوجل وآبل مش بيوصلوا لـ localhost. للتجربة استخدمي Dev Tunnel أو ngrok.",
+                  "Subscribing works once the site is online, since Google and Apple cannot reach localhost. To test, use a Dev Tunnel or ngrok."),
+        ["cal.apple"] = ("iPhone / iPad / Mac", "iPhone / iPad / Mac"),
+        ["cal.apple.d"] = ("اضغط اشتراك وهيفتح التقويم ويطلب منك التأكيد.", "Tap Subscribe and the Calendar app will ask you to confirm."),
+        ["cal.google"] = ("Google Calendar (أندرويد)", "Google Calendar (Android)"),
+        ["cal.google.d"] = ("هيفتح جوجل كالندر، اضغط إضافة وهيظهر في موبايلك تلقائيًا.", "Opens Google Calendar. Tap Add and it syncs to your phone automatically."),
+        ["cal.manual"] = ("أو انسخ الرابط", "Or copy the link"),
+        ["cal.manual.d"] = ("في أي تطبيق تقويم اختر إضافة تقويم من رابط (From URL) والصق الرابط.", "In any calendar app choose Add calendar from URL and paste this link."),
+        ["cal.subscribe"] = ("اشتراك", "Subscribe"),
+        ["cal.copy"] = ("نسخ", "Copy"),
+        ["cal.copied"] = ("تم النسخ ✓", "Copied ✓"),
+        ["cal.tips.title"] = ("عشان التنبيهات توصلك", "To receive the alerts"),
+        ["cal.tips.1"] = ("كل ميعاد مؤكد فيه تنبيه قبل يوم وقبل ساعة، وبيشتغل تلقائيًا على iPhone.", "Every confirmed meeting has alerts 1 day and 1 hour before. On iPhone they work automatically."),
+        ["cal.tips.2"] = ("في Google Calendar افتح إعدادات تقويم Clientix وضيف إشعارات قبل يوم وقبل ساعة (مرة واحدة)، لأن جوجل بتستخدم إعدادات التقويم بدل تنبيهات الملف.", "In Google Calendar open the Clientix calendar settings and add notifications 1 day and 1 hour before (one time), because Google uses the calendar's settings instead of the file's alerts."),
+        ["cal.tips.3"] = ("أي ميعاد جديد أو إلغاء بيظهر في التقويم بعد فترة (آبل غالبًا خلال ساعة، وجوجل ممكن لحد يوم). الإيميل والإشعارات جوه الموقع لحظيين.", "New or cancelled meetings show up in the calendar after a while (Apple usually within an hour, Google up to a day). Email and in-site notifications are instant."),
+        ["cal.tips.4"] = ("الرابط خاص بيك، متشاركوش مع حد.", "This link is private, do not share it."),
     };
 
 }

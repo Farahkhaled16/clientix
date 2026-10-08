@@ -39,6 +39,7 @@
                     <h3>@(string.IsNullOrEmpty(Model.Next.AgencyName) ? T["meet.general"] : Model.Next.AgencyName)</h3>
                     <p>@nl.ToString("dddd, h:mm tt", Model.Cult)</p>
                     <span class="countdown">⏱ @Model.Countdown</span>
+                    <a class="btn btn-white btn-sm" style="margin-top:12px" href="/meetings/ics/@Model.Next.Id">📆 @T["meet.addcal"]</a>
                 </div>
             </div>
         }
@@ -120,6 +121,7 @@
         <div class="panel">
             <div class="panel-head"><h2>@T["bz.quick"]</h2></div>
             <nav class="quick">
+                <a href="/Calendar"><span class="q-ico">📆</span>@T["nav.calendar"]</a>
                 <a href="/Agencies"><span class="q-ico">🏢</span>@T["bz.browse"]</a>
                 <a href="/Meetings/Book"><span class="q-ico">📅</span>@T["agencies.book"]</a>
                 <a href="/Meetings/Mine"><span class="q-ico">🗂️</span>@T["meet.mine"]</a>

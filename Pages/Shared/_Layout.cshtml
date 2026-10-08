@@ -5,13 +5,19 @@
     var isBroker = User.IsInRole("broker");
     var isBusiness = User.IsInRole("business");
     var isAgency = User.IsInRole("agency");
+    var authed = User.Identity?.IsAuthenticated == true;
     var home = isBroker ? "/Broker" : isBusiness ? "/Business" : isAgency ? "/Agency" : "/";
+    var path = Context.Request.Path.Value ?? "/";
+    bool On(string p, bool exact = false) =>
+        exact ? path.Equals(p, StringComparison.OrdinalIgnoreCase) : path.StartsWith(p, StringComparison.OrdinalIgnoreCase);
 
+    var uid = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
     var unread = isBroker ? await Fs.CountUnread() : 0;
+    var userUnread = (isBusiness || isAgency) ? await Fs.CountUserUnread(uid) : 0;
     var chatUnread = 0;
     if (isBusiness)
     {
-        var th = await Fs.GetThread(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var th = await Fs.GetThread(uid);
         chatUnread = th?.UnreadForBusiness ?? 0;
     }
 }
@@ -19,49 +25,54 @@
 <html lang="@T.Lang" dir="@(T.IsRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#26313A" />
     <title>@T["site.name"]</title>
-    <link rel="icon" type="image/png" sizes="120x120" href="~/img/favicon.png" asp-append-version="true" />
-    <link rel="apple-touch-icon" href="~/img/favicon.png" asp-append-version="true" />
+    <link rel="icon" type="image/svg+xml" href="~/img/logo-mark.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
 </head>
-<body>
+<body class="@(authed ? "has-tabs" : "")">
     <header class="nav">
         <div class="container">
-            <a href="@home" class="logo"><img src="~/img/clientix-logo.png" alt="@T["site.name"]" asp-append-version="true" />@T["site.name"]</a>
-            <div class="nav-actions">
+            <a href="@home" class="logo"><img src="~/img/clientix-logo.png" alt="Clientix" /></a>
+
+            <nav class="nav-links @(authed ? "tabs" : "")">
                 @if (isBusiness)
                 {
-                    <a class="nav-link" href="/Business">@T["nav.dashboard"]</a>
-                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
-                    <a class="nav-link" href="/Meetings/Mine">@T["meet.mine"]</a>
-                    <a class="nav-link bell" href="/Chat" aria-label="@T["chat.title"]">💬<span id="chatBadge" class="bell-badge" hidden="@(chatUnread == 0)">@chatUnread</span></a>
+                    <a class="nav-link @(On("/Business", true) ? "active" : "")" href="/Business"><span class="ico">🏠</span><span class="lbl">@T["nav.dashboard"]</span></a>
+                    <a class="nav-link @(On("/Agenc") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
+                    <a class="nav-link @(On("/Meetings") ? "active" : "")" href="/Meetings/Mine"><span class="ico">📅</span><span class="lbl">@T["meet.mine"]</span></a>
+                    <a class="nav-link bell @(On("/Chat") ? "active" : "")" href="/Chat" aria-label="@T["chat.title"]"><span class="ico">💬</span><span class="lbl">@T["nav.chat"]</span><span id="chatBadge" class="bell-badge" hidden="@(chatUnread == 0)">@chatUnread</span></a>
+                    <a class="nav-link bell @(On("/Notifications") ? "active" : "")" href="/Notifications" aria-label="@T["notif.title"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="userBell" class="bell-badge" hidden="@(userUnread == 0)">@userUnread</span></a>
                 }
                 else if (isBroker)
                 {
-                    <a class="nav-link" href="/Broker">@T["nav.dashboard"]</a>
-                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
-                    <a class="nav-link" href="/Broker/Chat">@T["bk.chat"]</a>
-                    <a class="nav-link bell" href="/Broker#activity" aria-label="@T["bk.activity"]">🔔<span id="bellCount" class="bell-badge" hidden="@(unread == 0)">@unread</span></a>
+                    <a class="nav-link @(On("/Broker", true) ? "active" : "")" href="/Broker"><span class="ico">🏠</span><span class="lbl">@T["nav.dashboard"]</span></a>
+                    <a class="nav-link @(On("/Agenc") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
+                    <a class="nav-link @(On("/Broker/Chat") ? "active" : "")" href="/Broker/Chat"><span class="ico">💬</span><span class="lbl">@T["bk.chat"]</span></a>
+                    <a class="nav-link bell" href="/Broker#activity" aria-label="@T["bk.activity"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="bellCount" class="bell-badge" hidden="@(unread == 0)">@unread</span></a>
                 }
                 else if (isAgency)
                 {
-                    <a class="nav-link" href="/Agency">@T["nav.myprofile"]</a>
-                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                    <a class="nav-link @(On("/Agency", true) ? "active" : "")" href="/Agency"><span class="ico">🏠</span><span class="lbl">@T["nav.myprofile"]</span></a>
+                    <a class="nav-link @(On("/Agencies") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
+                    <a class="nav-link bell @(On("/Notifications") ? "active" : "")" href="/Notifications" aria-label="@T["notif.title"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="userBell" class="bell-badge" hidden="@(userUnread == 0)">@userUnread</span></a>
                 }
                 else
                 {
-                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                    <a class="nav-link" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
                 }
+            </nav>
 
+            <div class="nav-actions">
                 <a class="lang-switch"
                    href="/setlang?lang=@(T.Lang == "ar" ? "en" : "ar")&returnUrl=@Context.Request.Path">
                     @T["lang.switch"]
                 </a>
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (authed)
                 {
                     <form method="post" action="/logout" style="display:inline">
                         <button class="lang-switch" type="submit">@T["auth.logout"]</button>
@@ -85,13 +96,16 @@
     {
         <div id="toasts" class="toasts"
              data-visit="@T["n.visit"]" data-register="@T["n.register"]" data-login="@T["n.login"]"
-             data-meeting="@T["n.meeting"]" data-agency="@T["n.agency"]" data-chat="@T["n.chat"]"></div>
+             data-meeting="@T["n.meeting"]" data-agency="@T["n.agency"]" data-chat="@T["n.chat"]"
+             data-reminder="@T["n.reminder"]"></div>
     }
-    @if (isBusiness)
+    @if (isBusiness || isAgency)
     {
-        <div id="toasts" class="toasts" data-chat="@T["chat.newmsg"]"></div>
+        <div id="toasts" class="toasts" data-chat="@T["chat.newmsg"]"
+             data-approved="@T["n.approved"]" data-rejected="@T["n.rejected"]"
+             data-cancelled="@T["n.cancelled"]" data-reminder="@T["n.reminder"]"></div>
     }
-    @if (isBroker || isBusiness)
+    @if (isBroker || isBusiness || isAgency)
     {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     }
@@ -102,6 +116,10 @@
     @if (isBusiness)
     {
         <script src="~/js/chat-badge.js" asp-append-version="true"></script>
+    }
+    @if (isBusiness || isAgency)
+    {
+        <script src="~/js/user-live.js" asp-append-version="true"></script>
     }
 
     @await RenderSectionAsync("Scripts", required: false)

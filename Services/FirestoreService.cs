@@ -187,4 +187,53 @@ public class FirestoreService
         if (!snap.Exists) return;
         await docRef.UpdateAsync(broker ? "UnreadForBroker" : "UnreadForBusiness", 0);
     }
+
+    // ---------- Reminders ----------
+    public async Task<List<Meeting>> GetMeetingsBetween(DateTime fromUtc, DateTime toUtc)
+    {
+        var snap = await Db.Collection("meetings")
+            .WhereGreaterThan("StartsAt", Timestamp.FromDateTime(DateTime.SpecifyKind(fromUtc, DateTimeKind.Utc)))
+            .WhereLessThan("StartsAt", Timestamp.FromDateTime(DateTime.SpecifyKind(toUtc, DateTimeKind.Utc)))
+            .GetSnapshotAsync();
+        return snap.Documents.Select(d => d.ConvertTo<Meeting>()).ToList();
+    }
+
+    public async Task SetReminderFlags(string id, bool day, bool hour) =>
+        await Db.Collection("meetings").Document(id).UpdateAsync(new Dictionary<string, object>
+        {
+        { "ReminderDaySent", day },
+        { "ReminderHourSent", hour }
+        });
+
+    // ---------- Business / Agency notifications ----------
+    public async Task AddUserNotification(AppNotification n)
+    {
+        var doc = Db.Collection("user_notifications").Document();
+        n.Id = doc.Id;
+        await doc.SetAsync(n);
+    }
+
+    public async Task<List<AppNotification>> GetUserNotifications(string userId, int take = 50)
+    {
+        var snap = await Db.Collection("user_notifications").WhereEqualTo("UserId", userId).GetSnapshotAsync();
+        return snap.Documents.Select(d => d.ConvertTo<AppNotification>())
+            .OrderByDescending(n => n.CreatedAt).Take(take).ToList();
+    }
+
+    public async Task<int> CountUserUnread(string userId)
+    {
+        var snap = await Db.Collection("user_notifications")
+            .WhereEqualTo("UserId", userId).WhereEqualTo("Read", false).Limit(99).GetSnapshotAsync();
+        return snap.Count;
+    }
+
+    public async Task MarkUserRead(string userId)
+    {
+        var snap = await Db.Collection("user_notifications")
+            .WhereEqualTo("UserId", userId).WhereEqualTo("Read", false).Limit(200).GetSnapshotAsync();
+        if (snap.Count == 0) return;
+        var batch = Db.StartBatch();
+        foreach (var d in snap.Documents) batch.Update(d.Reference, "Read", true);
+        await batch.CommitAsync();
+    }
 }

@@ -8,7 +8,7 @@
     <h1>@T["bk.chat"]</h1>
 </section>
 
-<div class="chat-layout">
+<div class="chat-layout @(Model.Current != null ? "open" : "")">
     <aside class="panel chat-list">
         @if (!Model.Threads.Any())
         {
@@ -40,6 +40,7 @@
         else
         {
             <div class="chat-head">
+                <a class="back-link" href="/Broker/Chat"><span class="back-arrow">←</span></a>
                 <div class="avatar sm">@(Model.Current.BusinessName.Length > 0 ? Model.Current.BusinessName.Substring(0, 1) : "?")</div>
                 <div>
                     <b>@Model.Current.BusinessName</b>

@@ -6,7 +6,8 @@ namespace BrokerHub.Models;
 public class AppNotification
 {
     [FirestoreProperty] public string Id { get; set; } = "";
-    [FirestoreProperty] public string Type { get; set; } = "";   // visit | register | login | meeting | agency | chat
+    [FirestoreProperty] public string UserId { get; set; } = "";   // فاضي = إشعار الـ Broker
+    [FirestoreProperty] public string Type { get; set; } = "";
     [FirestoreProperty] public string Body { get; set; } = "";
     [FirestoreProperty] public string Link { get; set; } = "";
     [FirestoreProperty] public bool Read { get; set; }

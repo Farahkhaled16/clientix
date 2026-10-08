@@ -1,0 +1,60 @@
+﻿@page "/Calendar"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business,agency,broker")]
+@model BrokerHub.Pages.Calendar.IndexModel
+@inject BrokerHub.Services.Translator T
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["cal.title"]</h1>
+    <p>@T["cal.sub"]</p>
+</section>
+
+<div class="cal-stack">
+    @if (Model.IsLocal)
+    {
+        <div class="alert">@T["cal.local"]</div>
+    }
+
+    <div class="panel cal-card">
+        <h2>🍎 @T["cal.apple"]</h2>
+        <p class="muted">@T["cal.apple.d"]</p>
+        <a class="btn" href="@Model.WebcalUrl">@T["cal.subscribe"]</a>
+    </div>
+
+    <div class="panel cal-card">
+        <h2>📆 @T["cal.google"]</h2>
+        <p class="muted">@T["cal.google.d"]</p>
+        <a class="btn" target="_blank" rel="noopener" href="@Model.GoogleUrl">@T["cal.subscribe"]</a>
+    </div>
+
+    <div class="panel cal-card">
+        <h2>🔗 @T["cal.manual"]</h2>
+        <p class="muted">@T["cal.manual.d"]</p>
+        <div class="copy-row">
+            <input id="calUrl" readonly value="@Model.HttpsUrl" />
+            <button id="copyBtn" class="btn btn-sm" type="button" data-done="@T["cal.copied"]">@T["cal.copy"]</button>
+        </div>
+    </div>
+
+    <div class="panel cal-card">
+        <h2>🔔 @T["cal.tips.title"]</h2>
+        <ul class="tips">
+            <li>@T["cal.tips.1"]</li>
+            <li>@T["cal.tips.2"]</li>
+            <li>@T["cal.tips.3"]</li>
+            <li>@T["cal.tips.4"]</li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('copyBtn').addEventListener('click', function () {
+          var btn = this, input = document.getElementById('calUrl'), old = btn.textContent;
+          input.select();
+          navigator.clipboard.writeText(input.value).then(function () {
+            btn.textContent = btn.dataset.done;
+            setTimeout(function () { btn.textContent = old; }, 2000);
+          });
+        });
+    </script>
+}
