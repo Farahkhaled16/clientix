@@ -4,3 +4,4 @@ obj/
 firebase-key.json
 appsettings.Development.json
 appsettings.Production.json
+App_Data/
