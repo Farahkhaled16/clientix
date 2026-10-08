@@ -1,0 +1,47 @@
+﻿@page
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Chat.IndexModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["chat.title"]</h1>
+    <p>@T["chat.sub"]</p>
+</section>
+
+<div class="chat-shell">
+    <div class="chat-head">
+        <div class="avatar sm">B</div>
+        <div>
+            <b>@T["chat.broker"]</b>
+            <span id="chatStatus" class="status" data-on="@T["chat.online"]" data-off="@T["chat.connecting"]">@T["chat.connecting"]</span>
+        </div>
+        @if (Model.About != null)
+        {
+            <span class="chip" style="margin-inline-start:auto">@T["chat.about"]: @Model.About</span>
+        }
+    </div>
+
+    <div id="chatLog" class="chat-log" data-role="business" data-thread="@Model.ThreadId">
+        @if (!Model.Messages.Any())
+        {
+            <p id="chatEmpty" class="chat-empty">@T["chat.empty"]</p>
+        }
+        @foreach (var m in Model.Messages)
+        {
+            <div class="bubble @(m.SenderRole == "business" ? "me" : "them")">
+                <p>@m.Text</p>
+                <time>@AppTime.ToLocal(m.CreatedAt).ToString("h:mm tt")</time>
+            </div>
+        }
+    </div>
+
+    <form id="chatForm" class="chat-form">
+        <textarea id="chatInput" rows="1" placeholder="@T["chat.placeholder"]">@Model.Prefill</textarea>
+        <button class="btn" type="submit">@T["chat.send"]</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+}

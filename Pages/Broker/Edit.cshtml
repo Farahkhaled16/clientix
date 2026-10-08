@@ -1,0 +1,137 @@
+﻿@page "/Broker/Edit"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "broker")]
+@model BrokerHub.Pages.Broker.EditModel
+@inject BrokerHub.Services.Translator T
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@(Model.IsNew ? T["bk.newtitle"] : T["bk.edit"])</h1>
+</section>
+
+@if (Model.Error != null)
+{
+    <div class="alert wide">@T[Model.Error]</div>
+}
+@if (Model.Note != null)
+{
+    <div class="alert ok wide">@T[Model.Note]</div>
+}
+@if (Model.Saved)
+{
+    <div class="alert ok wide">@T["pf.saved"]</div>
+}
+
+<!-- Autofill -->
+<div class="form-box wide autofill">
+    <h2>✨ @T["pf.autofill.title"]</h2>
+    <p class="form-link">@T["pf.autofill.desc"]</p>
+    <form method="post" asp-page-handler="Autofill" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <input type="hidden" name="email" value="@Model.Email" />
+        <input type="file" name="cv" accept=".pdf,.docx,.jpg,.jpeg,.png,.webp" required />
+        <button class="btn" type="submit">@T["pf.autofill.btn"]</button>
+    </form>
+</div>
+
+<p class="form-link" style="text-align:center">— @T["pf.manual"] —</p>
+
+<!-- Main form -->
+<div class="form-box wide">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        @if (Model.IsNew)
+        {
+            <label>@T["auth.email"]</label>
+            <input type="email" name="email" value="@Model.Email" required />
+            <label>@T["auth.password"]</label>
+            <input type="password" name="password" required minlength="6" />
+        }
+
+        <label>@T["pf.company"]</label>
+        <input type="text" name="CompanyName" value="@Model.P.CompanyName" required />
+
+        <label>@T["pf.about"]</label>
+        <textarea name="About" rows="4">@Model.P.About</textarea>
+
+        <label>@T["pf.services"]</label>
+        <input type="text" name="Services" value="@Model.P.Services" placeholder="Social Media, SEO, Branding" />
+
+        <div class="row2">
+            <div>
+                <label>@T["pf.city"]</label>
+                <input type="text" name="City" value="@Model.P.City" />
+            </div>
+            <div>
+                <label>@T["pf.founded"]</label>
+                <input type="number" name="FoundedYear" value="@(Model.P.FoundedYear == 0 ? "" : Model.P.FoundedYear.ToString())" />
+            </div>
+            <div>
+                <label>@T["pf.team"]</label>
+                <input type="number" name="TeamSize" value="@(Model.P.TeamSize == 0 ? "" : Model.P.TeamSize.ToString())" />
+            </div>
+        </div>
+
+        <label>@T["pf.website"]</label>
+        <input type="url" name="Website" value="@Model.P.Website" />
+        <label>@T["pf.instagram"]</label>
+        <input type="url" name="Instagram" value="@Model.P.Instagram" />
+        <label>@T["pf.linkedin"]</label>
+        <input type="url" name="LinkedIn" value="@Model.P.LinkedIn" />
+
+        <label>@T["pf.logo"]</label>
+        <input type="url" name="LogoUrl" value="@Model.P.LogoUrl" />
+        <label>@T["pf.logofile"]</label>
+        <input type="file" name="logoFile" accept="image/*" />
+
+        <button class="btn" type="submit">@T["pf.save"]</button>
+    </form>
+</div>
+
+@if (!Model.IsNew)
+{
+    <h2 class="section-title">@T["pf.works"]</h2>
+
+    <div class="form-box wide">
+        <form method="post" asp-page-handler="AddWork" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <label>@T["pf.worktitle"]</label>
+            <input type="text" name="Title" required />
+            <label>@T["pf.workdesc"]</label>
+            <textarea name="Description" rows="2"></textarea>
+
+            <label>@T["pf.workmedia"]</label>
+            <input type="file" name="media" accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" />
+            <small class="hint">@T["pf.workmedia.hint"]</small>
+
+            <label>@T["pf.workimg"]</label>
+            <input type="url" name="ImageUrl" />
+            <label>@T["pf.worklink"]</label>
+            <input type="url" name="Link" />
+            <button class="btn" type="submit">@T["pf.addwork"]</button>
+        </form>
+    </div>
+
+    @if (!Model.P.Works.Any())
+    {
+        <p style="text-align:center;color:var(--muted)">@T["pf.nowork"]</p>
+    }
+
+    <section class="cards">
+        @for (var i = 0; i < Model.P.Works.Count; i++)
+        {
+            var w = Model.P.Works[i];
+            <div class="card work">
+                <partial name="_Media" model="w" />
+                <h2>@w.Title</h2>
+                <p>@w.Description</p>
+                <form method="post" asp-page-handler="DeleteWork">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="index" value="@i" />
+                    <button class="btn btn-light" type="submit">@T["pf.delete"]</button>
+                </form>
+            </div>
+        }
+    </section>
+}
+
+<p class="form-link"><a href="/Broker">← @T["pf.back"]</a></p>

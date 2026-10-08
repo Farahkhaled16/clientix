@@ -1,0 +1,70 @@
+﻿@page "/Broker/Chat"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "broker")]
+@model BrokerHub.Pages.Broker.ChatModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["bk.chat"]</h1>
+</section>
+
+<div class="chat-layout">
+    <aside class="panel chat-list">
+        @if (!Model.Threads.Any())
+        {
+            <p class="muted">@T["bk.chat.none"]</p>
+        }
+        <ul id="threadList" class="threads">
+            @foreach (var t in Model.Threads)
+            {
+                var ini = t.BusinessName.Length > 0 ? t.BusinessName.Substring(0, 1) : "?";
+                <li data-id="@t.Id" class="@(Model.Current?.Id == t.Id ? "active" : "")">
+                    <a href="/Broker/Chat?thread=@t.Id">
+                        <span class="avatar sm">@ini</span>
+                        <span class="t-info"><b>@t.BusinessName</b><span class="last">@t.LastText</span></span>
+                        @if (t.UnreadForBroker > 0)
+                        {
+                            <span class="unread-badge">@t.UnreadForBroker</span>
+                        }
+                    </a>
+                </li>
+            }
+        </ul>
+    </aside>
+
+    <div class="chat-shell">
+        @if (Model.Current == null)
+        {
+            <p class="chat-empty" style="margin:auto">@T["bk.chat.pick"]</p>
+        }
+        else
+        {
+            <div class="chat-head">
+                <div class="avatar sm">@(Model.Current.BusinessName.Length > 0 ? Model.Current.BusinessName.Substring(0, 1) : "?")</div>
+                <div>
+                    <b>@Model.Current.BusinessName</b>
+                    <span id="chatStatus" class="status" data-on="@T["chat.online"]" data-off="@T["chat.connecting"]">@T["chat.connecting"]</span>
+                </div>
+            </div>
+
+            <div id="chatLog" class="chat-log" data-role="broker" data-thread="@Model.Current.Id">
+                @foreach (var m in Model.Messages)
+                {
+                    <div class="bubble @(m.SenderRole == "broker" ? "me" : "them")">
+                        <p>@m.Text</p>
+                        <time>@AppTime.ToLocal(m.CreatedAt).ToString("d MMM, h:mm tt")</time>
+                    </div>
+                }
+            </div>
+
+            <form id="chatForm" class="chat-form">
+                <textarea id="chatInput" rows="1" placeholder="@T["chat.placeholder"]"></textarea>
+                <button class="btn" type="submit">@T["chat.send"]</button>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+}

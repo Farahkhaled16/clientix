@@ -1,0 +1,33 @@
+﻿@page "/Meetings/Book"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Meetings.BookModel
+@inject BrokerHub.Services.Translator T
+
+<div class="form-box">
+    <h1>@T["meet.book.title"]</h1>
+    <p class="form-link" style="margin-top:0">
+        @T["meet.about"]: <b>@(Model.AgencyName ?? T["meet.general"])</b>
+    </p>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert">@T[Model.Error]</div>
+    }
+
+    @if (Model.Sent)
+    {
+        <div class="alert ok">@T["meet.sent"]</div>
+        <a class="btn" href="/Meetings/Mine">@T["meet.mine"]</a>
+    }
+    else
+    {
+        <form method="post">
+            <input type="hidden" name="agencyId" value="@Model.AgencyId" />
+            <label>@T["meet.date"]</label>
+            <input type="datetime-local" name="slot" min="@Model.MinLocal" required />
+            <label>@T["meet.note"]</label>
+            <textarea name="note" rows="3"></textarea>
+            <button class="btn" type="submit">@T["meet.submit"]</button>
+        </form>
+    }
+</div>

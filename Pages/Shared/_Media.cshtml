@@ -1,0 +1,15 @@
+﻿@model BrokerHub.Models.WorkItem
+@inject BrokerHub.Services.Translator T
+
+@if (Model.Kind == "image")
+{
+    <img src="@Model.Url" alt="@Model.Title" />
+}
+else if (Model.Kind == "video")
+{
+    <video src="@Model.Url" controls preload="metadata"></video>
+}
+else if (Model.Kind == "file")
+{
+    <a class="file-chip" href="@Model.Url" target="_blank" rel="noopener">📎 @T["pf.openfile"]</a>
+}

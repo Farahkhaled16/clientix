@@ -1,0 +1,24 @@
+﻿@page "/Meetings/Mine"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Meetings.MineModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero"><h1>@T["meet.mine"]</h1></section>
+
+<div class="form-box wide" style="margin-bottom:60px">
+    @if (!Model.Items.Any()) { <p class="form-link">@T["meet.none"]</p> }
+    @foreach (var m in Model.Items)
+    {
+        var l = AppTime.ToLocal(m.StartsAt);
+        <div class="meet @m.Status">
+            <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+            <div class="meet-info">
+                <h3>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</h3>
+                <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+            </div>
+            <span class="pill @m.Status">@T["meet.status." + m.Status]</span>
+        </div>
+    }
+    <p class="form-link"><a href="/Agencies">@T["agencies.title"]</a></p>
+</div>

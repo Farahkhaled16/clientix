@@ -1,0 +1,73 @@
+﻿@page "/Agency"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "agency")]
+@model BrokerHub.Pages.Agency.IndexModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+@{
+    var title = string.IsNullOrEmpty(Model.P.CompanyName) ? (User.Identity?.Name ?? "") : Model.P.CompanyName;
+    var initial = title.Length > 0 ? title.Substring(0, 1) : "?";
+    var services = Model.P.Services.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+
+<section class="dash-banner">
+    <div>
+        <h1>@T["dash.welcome"] @title 👋</h1>
+        <p>@T["ag.readonly"]</p>
+    </div>
+    <a class="btn btn-white" href="/Agencies/Details?id=@Model.AgencyId">@T["pf.viewpublic"]</a>
+</section>
+
+<section class="stats">
+    <div class="stat"><div class="stat-ico">🖼️</div><div><b>@Model.P.Works.Count</b><span>@T["ag.stat.works"]</span></div></div>
+    <div class="stat hot"><div class="stat-ico">📅</div><div><b>@Model.Upcoming.Count</b><span>@T["ag.stat.meetings"]</span></div></div>
+    <div class="stat"><div class="stat-ico">🧩</div><div><b>@services.Length</b><span>@T["ag.stat.services"]</span></div></div>
+</section>
+
+<section class="dash-grid">
+    <div class="panel">
+        <div class="panel-head"><h2>@T["ag.meetings"]</h2></div>
+        @if (!Model.Upcoming.Any())
+        {
+            <p class="muted">@T["ag.nomeet"]</p>
+        }
+        @foreach (var m in Model.Upcoming)
+        {
+            var l = AppTime.ToLocal(m.StartsAt);
+            <div class="meet approved">
+                <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                <div class="meet-info">
+                    <h3>@T["ag.who"]: @m.BusinessName</h3>
+                    <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+                </div>
+                <span class="pill approved">@T["meet.status.approved"]</span>
+            </div>
+        }
+    </div>
+
+    <aside class="panel">
+        <div class="panel-head"><h2>@T["ag.profile"]</h2></div>
+        <div class="account-card">
+            @if (!string.IsNullOrEmpty(Model.P.LogoUrl))
+            {
+                <img class="avatar" src="@Model.P.LogoUrl" alt="@title" />
+            }
+            else
+            {
+                <div class="avatar">@initial</div>
+            }
+            <div>
+                <b>@title</b>
+                @if (!string.IsNullOrEmpty(Model.P.City)) { <span class="muted" style="display:block">📍 @Model.P.City</span> }
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.P.About))
+        {
+            <p class="muted" style="margin-top:14px">@Model.P.About</p>
+        }
+        <div class="tags" style="justify-content:flex-start;margin-top:12px">
+            @foreach (var s in services) { <span class="tag">@s</span> }
+        </div>
+    </aside>
+</section>
+<div style="height:70px"></div>

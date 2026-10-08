@@ -1,0 +1,22 @@
+﻿@page
+@model BrokerHub.Pages.Account.ForgotModel
+@inject BrokerHub.Services.Translator T
+
+<div class="form-box">
+    <h1>@T["forgot.title"]</h1>
+
+    @if (Model.Sent)
+    {
+        <div class="alert ok">@T["forgot.sent"]</div>
+    }
+    else
+    {
+        <p class="form-link">@T["forgot.desc"]</p>
+        <form method="post">
+            <label>@T["auth.email"]</label>
+            <input type="email" name="email" required />
+            <button class="btn" type="submit">@T["forgot.send"]</button>
+        </form>
+    }
+    <p class="form-link"><a href="/Account/Login">@T["auth.login"]</a></p>
+</div>

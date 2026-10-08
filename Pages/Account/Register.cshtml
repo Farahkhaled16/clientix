@@ -1,0 +1,42 @@
+﻿@page
+@model BrokerHub.Pages.Account.RegisterModel
+@inject BrokerHub.Services.Translator T
+
+<div class="form-box">
+    <h1>@T["auth.register"]</h1>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert">@T[Model.Error]</div>
+    }
+
+    @if (Model.Done)
+    {
+        <div class="alert ok">@T["auth.checkemail"]</div>
+        <p class="form-link"><a href="/Account/Login?role=@Model.Role">@T["auth.login"]</a></p>
+    }
+    else
+    {
+        <form method="post">
+            <input type="hidden" name="role" value="@Model.Role" />
+            <label>@T["auth.name"]</label>
+            <input type="text" name="name" required />
+            <label>@T["auth.email"]</label>
+            <input type="email" name="email" required />
+            <label>@T["auth.password"]</label>
+            <input type="password" name="password" required minlength="6" />
+            <button class="btn" type="submit">@T["auth.register"]</button>
+        </form>
+
+        <div class="divider"><span>@T["auth.or"]</span></div>
+        <a class="btn btn-google"
+           href="/google-login?role=@Model.Role&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">
+            @T["auth.google"]
+        </a>
+
+        <p class="form-link">
+            @T["auth.haveaccount"]
+            <a href="/Account/Login?role=@Model.Role&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">@T["auth.login"]</a>
+        </p>
+    }
+</div>

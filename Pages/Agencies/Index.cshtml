@@ -1,0 +1,41 @@
+﻿@page "/Agencies"
+@model BrokerHub.Pages.Agencies.IndexModel
+@inject BrokerHub.Services.Translator T
+
+<section class="hero">
+    <h1>@T["agencies.title"]</h1>
+</section>
+
+@if (!Model.Items.Any())
+{
+    <p style="text-align:center;color:var(--muted);padding-bottom:80px">@T["agencies.empty"]</p>
+}
+
+<section class="agency-grid">
+    @foreach (var a in Model.Items)
+    {
+        var title = string.IsNullOrEmpty(a.P.CompanyName) ? a.Name : a.P.CompanyName;
+        var initial = title.Length > 0 ? title.Substring(0, 1) : "?";
+        <article class="agency-card">
+            <div class="banner"></div>
+            @if (!string.IsNullOrEmpty(a.P.LogoUrl))
+            {
+                <img class="avatar" src="@a.P.LogoUrl" alt="@title" />
+            }
+            else
+            {
+                <div class="avatar">@initial</div>
+            }
+            <h2>@title</h2>
+            @if (!string.IsNullOrEmpty(a.P.City)) { <div class="city">📍 @a.P.City</div> }
+            <p class="about">@(a.P.About.Length > 110 ? a.P.About.Substring(0, 110) + "…" : a.P.About)</p>
+            <div class="tags">
+                @foreach (var s in a.P.Services.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    <span class="tag">@s</span>
+                }
+            </div>
+            <a class="btn" href="/Agencies/Details?id=@a.Id">@T["pf.view"]</a>
+        </article>
+    }
+</section>

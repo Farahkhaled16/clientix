@@ -1,0 +1,102 @@
+﻿@page "/Agencies/Details"
+@model BrokerHub.Pages.Agencies.DetailsModel
+@inject BrokerHub.Services.Translator T
+
+@if (Model.Agency == null)
+{
+    <section class="hero"><h1>@T["pf.notfound"]</h1></section>
+}
+else
+{
+    var p = Model.P;
+    var title = string.IsNullOrEmpty(p.CompanyName) ? Model.Agency.Name : p.CompanyName;
+    var initial = title.Length > 0 ? title.Substring(0, 1) : "?";
+
+    <section class="profile">
+        <div class="profile-banner"></div>
+        <div class="profile-head">
+            @if (!string.IsNullOrEmpty(p.LogoUrl))
+            {
+                <img class="profile-avatar" src="@p.LogoUrl" alt="@title" />
+            }
+            else
+            {
+                <div class="profile-avatar">@initial</div>
+            }
+
+            <h1>@title</h1>
+            <p class="lead">@p.About</p>
+
+            <div class="info-bar">
+                @if (!string.IsNullOrEmpty(p.City)) { <span class="chip">📍 @p.City</span> }
+                @if (p.FoundedYear > 0) { <span class="chip">📅 @T["pf.year"] @p.FoundedYear</span> }
+                @if (p.TeamSize > 0) { <span class="chip">👥 @p.TeamSize @T["pf.members"]</span> }
+            </div>
+
+            <div class="tags">
+                @foreach (var s in p.Services.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    <span class="tag">@s</span>
+                }
+            </div>
+
+            <div class="profile-actions">
+                @if (User.IsInRole("broker"))
+                {
+                    <a class="btn" href="/Broker/Edit?id=@Model.Agency.Id">@T["bk.edit"]</a>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn" href="/Account/Login?role=business&returnUrl=@Uri.EscapeDataString("/Chat?about=" + Model.Agency.Id)">@T["agencies.chat"]</a>
+                    <a class="btn" href="/Account/Login?role=business&returnUrl=@Uri.EscapeDataString("/Meetings/Book?agencyId=" + Model.Agency.Id)">@T["agencies.book"]</a>
+                }
+                else if (User.IsInRole("business"))
+                {
+                    <a class="btn" href="/Chat?about=@Model.Agency.Id">@T["agencies.chat"]</a>
+                    <a class="btn" href="/Meetings/Book?agencyId=@Model.Agency.Id">@T["agencies.book"]</a>
+                }
+
+                @if (!string.IsNullOrEmpty(p.Website) || !string.IsNullOrEmpty(p.Instagram) || !string.IsNullOrEmpty(p.LinkedIn))
+                {
+                    <span class="sep"></span>
+                }
+                @if (!string.IsNullOrEmpty(p.Website))
+                {
+                    <a class="btn btn-light" target="_blank" rel="noopener" href="@p.Website">🌐 @T["pf.website"]</a>
+                }
+                @if (!string.IsNullOrEmpty(p.Instagram))
+                {
+                    <a class="btn btn-light" target="_blank" rel="noopener" href="@p.Instagram">Instagram</a>
+                }
+                @if (!string.IsNullOrEmpty(p.LinkedIn))
+                {
+                    <a class="btn btn-light" target="_blank" rel="noopener" href="@p.LinkedIn">LinkedIn</a>
+                }
+            </div>
+        </div>
+    </section>
+
+    <h2 class="section-title">@T["pf.works"]</h2>
+    @if (!p.Works.Any())
+    {
+        <p style="text-align:center;color:var(--muted);padding-bottom:60px">@T["pf.nowork"]</p>
+    }
+    <section class="works-grid">
+        @foreach (var w in p.Works)
+        {
+            <article class="work-card">
+                <partial name="_Media" model="w" />
+                <div class="work-body">
+                    <h3>@w.Title</h3>
+                    <p>@w.Description</p>
+                    @if (!string.IsNullOrEmpty(w.Link))
+                    {
+                        <a class="btn btn-light" target="_blank" rel="noopener" href="@w.Link">@T["pf.visit"]</a>
+                    }
+                </div>
+            </article>
+        }
+    </section>
+}
+
+<p class="form-link" style="padding-bottom:40px"><a href="/Agencies">← @T["pf.back"]</a></p>

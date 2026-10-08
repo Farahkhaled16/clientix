@@ -1,0 +1,27 @@
+﻿@page
+@model BrokerHub.Pages.Account.ResetModel
+@inject BrokerHub.Services.Translator T
+
+<div class="form-box">
+    <h1>@T["reset.title"]</h1>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert">@T[Model.Error]</div>
+    }
+
+    @if (Model.Done)
+    {
+        <div class="alert ok">@T["reset.done"]</div>
+        <a class="btn" href="/Account/Login">@T["auth.login"]</a>
+    }
+    else
+    {
+        <form method="post">
+            <input type="hidden" name="token" value="@Model.Token" />
+            <label>@T["auth.password"]</label>
+            <input type="password" name="password" required minlength="6" />
+            <button class="btn" type="submit">@T["reset.save"]</button>
+        </form>
+    }
+</div>

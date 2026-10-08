@@ -1,0 +1,15 @@
+﻿@page
+@model BrokerHub.Pages.Account.ConfirmModel
+@inject BrokerHub.Services.Translator T
+
+<div class="form-box">
+    @if (Model.Ok)
+    {
+        <div class="alert ok">@T["auth.confirmed"]</div>
+        <a class="btn" href="/Account/Login">@T["auth.login"]</a>
+    }
+    else
+    {
+        <div class="alert">@T["auth.confirm.bad"]</div>
+    }
+</div>

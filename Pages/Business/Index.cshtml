@@ -1,0 +1,164 @@
+﻿@page "/Business"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Business.IndexModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+@{
+    var initial = Model.Name.Length > 0 ? Model.Name.Substring(0, 1) : "?";
+}
+
+<section class="dash-banner">
+    <div>
+        <h1>@T["dash.welcome"] @Model.Name 👋</h1>
+        <p>@T["bz.sub"]</p>
+    </div>
+    <div class="links-bar" style="margin:0">
+        <a class="btn btn-white" href="/Agencies">@T["bz.browse"]</a>
+        <a class="btn btn-white" href="/Meetings/Book">@T["agencies.book"]</a>
+    </div>
+</section>
+
+<section class="stats">
+    <div class="stat"><div class="stat-ico">📅</div><div><b>@Model.Upcoming.Count</b><span>@T["bz.stat.upcoming"]</span></div></div>
+    <div class="stat hot"><div class="stat-ico">⏳</div><div><b>@Model.Pending.Count</b><span>@T["bz.stat.pending"]</span></div></div>
+    <div class="stat"><div class="stat-ico">🗂️</div><div><b>@Model.Total</b><span>@T["bz.stat.total"]</span></div></div>
+    <div class="stat"><div class="stat-ico">🏢</div><div><b>@Model.AgencyTotal</b><span>@T["bz.stat.agencies"]</span></div></div>
+</section>
+
+<section class="dash-grid">
+    <div class="panel">
+        <div class="panel-head"><h2>@T["bz.next"]</h2></div>
+
+        @if (Model.Next != null)
+        {
+            var nl = AppTime.ToLocal(Model.Next.StartsAt);
+            <div class="next-card">
+                <div class="next-date"><b>@nl.ToString("dd")</b><span>@nl.ToString("MMM", Model.Cult)</span></div>
+                <div>
+                    <h3>@(string.IsNullOrEmpty(Model.Next.AgencyName) ? T["meet.general"] : Model.Next.AgencyName)</h3>
+                    <p>@nl.ToString("dddd, h:mm tt", Model.Cult)</p>
+                    <span class="countdown">⏱ @Model.Countdown</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty">
+                <p>@T["bz.nonext"]</p>
+                <a class="btn btn-sm" href="/Meetings/Book">@T["agencies.book"]</a>
+            </div>
+        }
+
+        @if (Model.Upcoming.Count > 1)
+        {
+            <h3 class="day-label">@T["bz.upcoming"]</h3>
+            @foreach (var m in Model.Upcoming.Skip(1))
+            {
+                var l = AppTime.ToLocal(m.StartsAt);
+                <div class="meet approved">
+                    <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                    <div class="meet-info">
+                        <h3>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</h3>
+                        <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+                    </div>
+                    <span class="pill approved">@T["meet.status.approved"]</span>
+                </div>
+            }
+        }
+
+        @if (Model.Pending.Any())
+        {
+            <h3 class="day-label">@T["bz.waiting"] (@Model.Pending.Count)</h3>
+            @foreach (var m in Model.Pending)
+            {
+                var l = AppTime.ToLocal(m.StartsAt);
+                <div class="meet pending">
+                    <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                    <div class="meet-info">
+                        <h3>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</h3>
+                        <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+                    </div>
+                    <span class="pill pending">@T["meet.status.pending"]</span>
+                </div>
+            }
+        }
+
+        <h3 class="day-label">@T["bz.history"]</h3>
+        @if (!Model.History.Any())
+        {
+            <p class="muted">@T["bz.nohistory"]</p>
+        }
+        @foreach (var m in Model.History)
+        {
+            var l = AppTime.ToLocal(m.StartsAt);
+            <div class="meet @m.Status">
+                <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                <div class="meet-info">
+                    <h3>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</h3>
+                    <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+                </div>
+                <span class="pill @m.Status">@T["meet.status." + m.Status]</span>
+            </div>
+        }
+        <p class="form-link"><a href="/Meetings/Mine">@T["meet.mine"] ←</a></p>
+    </div>
+
+    <aside class="side-stack">
+        <div class="panel">
+            <div class="panel-head"><h2>@T["bz.account"]</h2></div>
+            <div class="account-card">
+                <div class="avatar">@initial</div>
+                <div>
+                    <b>@Model.Name</b>
+                    <span class="muted" style="display:block;word-break:break-all">@Model.Email</span>
+                    <span class="pill approved">@T["bz.role"]</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2>@T["bz.quick"]</h2></div>
+            <nav class="quick">
+                <a href="/Agencies"><span class="q-ico">🏢</span>@T["bz.browse"]</a>
+                <a href="/Meetings/Book"><span class="q-ico">📅</span>@T["agencies.book"]</a>
+                <a href="/Meetings/Mine"><span class="q-ico">🗂️</span>@T["meet.mine"]</a>
+                <a href="/Chat"><span class="q-ico">💬</span>@T["bz.chat"]</a>
+            </nav>
+        </div>
+    </aside>
+</section>
+
+<div class="panel-head" style="margin-top:44px">
+    <h2 class="section-title" style="margin:0">@T["bz.discover"]</h2>
+    <a class="btn btn-light btn-sm" style="margin:0" href="/Agencies">@T["bz.all"]</a>
+</div>
+
+<div class="hscroll">
+    @foreach (var a in Model.Agencies)
+    {
+        var title = string.IsNullOrEmpty(a.P.CompanyName) ? a.Name : a.P.CompanyName;
+        var ini = title.Length > 0 ? title.Substring(0, 1) : "?";
+        <article class="agency-card">
+            <div class="banner"></div>
+            @if (!string.IsNullOrEmpty(a.P.LogoUrl))
+            {
+                <img class="avatar" src="@a.P.LogoUrl" alt="@title" />
+            }
+            else
+            {
+                <div class="avatar">@ini</div>
+            }
+            <h2>@title</h2>
+            @if (!string.IsNullOrEmpty(a.P.City)) { <div class="city">📍 @a.P.City</div> }
+            <div class="tags">
+                @foreach (var s in a.P.Services.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(3))
+                {
+                    <span class="tag">@s</span>
+                }
+            </div>
+            <a class="btn" href="/Agencies/Details?id=@a.Id">@T["pf.view"]</a>
+        </article>
+    }
+</div>
+<div style="height:70px"></div>

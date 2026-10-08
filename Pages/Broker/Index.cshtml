@@ -1,0 +1,146 @@
+﻿@page "/Broker"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "broker")]
+@model BrokerHub.Pages.Broker.IndexModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+@functions {
+    string Icon(string t) => t switch
+    {
+        "visit" => "👀", "register" => "🆕", "login" => "🔑",
+        "meeting" => "📅", "agency" => "🏢", "chat" => "💬", _ => "🔔"
+    };
+}
+
+<section class="dash-banner">
+    <div>
+        <h1>@T["bk.title"]</h1>
+        <p>@T["bk.sub"]</p>
+    </div>
+    <a class="btn btn-white" href="/Broker/Edit">+ @T["bk.add"]</a>
+</section>
+
+<section class="stats">
+    <div class="stat"><div class="stat-ico">🏢</div><div><b>@Model.AgencyCount</b><span>@T["bk.stat.agencies"]</span></div></div>
+    <div class="stat"><div class="stat-ico">🤝</div><div><b>@Model.BusinessCount</b><span>@T["bk.stat.businesses"]</span></div></div>
+    <div class="stat hot"><div class="stat-ico">⏳</div><div><b>@Model.Pending.Count</b><span>@T["bk.stat.pending"]</span></div></div>
+    <div class="stat"><div class="stat-ico">👀</div><div><b>@Model.VisitsToday</b><span>@T["bk.stat.visits"]</span></div></div>
+</section>
+
+@if (Model.Msg != null) { <div class="alert ok wide">@T[Model.Msg]</div> }
+
+<section class="dash-grid">
+    <div class="panel" id="meetings">
+        <div class="panel-head"><h2>@T["bk.meetings"]</h2></div>
+
+        <h3 class="day-label">@T["bk.pending"] (@Model.Pending.Count)</h3>
+        @if (!Model.Pending.Any()) { <p class="muted">@T["bk.nopending"]</p> }
+        @foreach (var m in Model.Pending)
+        {
+            var l = AppTime.ToLocal(m.StartsAt);
+            <div class="meet pending">
+                <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                <div class="meet-info">
+                    <h3>@m.BusinessName</h3>
+                    <p>@l.ToString("dddd, h:mm tt", Model.Cult)</p>
+                    <p>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</p>
+                    @if (!string.IsNullOrEmpty(m.Note)) { <p>@m.Note</p> }
+                </div>
+                <form method="post" asp-page-handler="Decide" class="meet-actions">
+                    <input type="hidden" name="id" value="@m.Id" />
+                    <button class="btn btn-sm" name="decision" value="approved">@T["meet.approve"]</button>
+                    <button class="btn btn-light btn-sm" name="decision" value="rejected">@T["meet.reject"]</button>
+                </form>
+            </div>
+        }
+
+        <h3 class="day-label">@T["bk.upcoming"]</h3>
+        @if (!Model.Upcoming.Any()) { <p class="muted">@T["bk.nomeet"]</p> }
+        @foreach (var day in Model.Upcoming.GroupBy(m => AppTime.ToLocal(m.StartsAt).Date))
+        {
+            <div class="day-label">@day.Key.ToString("dddd d MMMM", Model.Cult)</div>
+            @foreach (var m in day)
+            {
+                var l = AppTime.ToLocal(m.StartsAt);
+                <div class="meet approved">
+                    <div class="meet-date"><b>@l.ToString("dd")</b><span>@l.ToString("MMM", Model.Cult)</span></div>
+                    <div class="meet-info">
+                        <h3>@m.BusinessName</h3>
+                        <p>@l.ToString("h:mm tt", Model.Cult)</p>
+                        <p>@(string.IsNullOrEmpty(m.AgencyName) ? T["meet.general"] : m.AgencyName)</p>
+                    </div>
+                    <form method="post" asp-page-handler="Decide" class="meet-actions">
+                        <input type="hidden" name="id" value="@m.Id" />
+                        <button class="btn btn-light btn-sm" name="decision" value="cancelled">@T["meet.cancel"]</button>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+
+    <aside class="panel" id="activity">
+        <div class="panel-head">
+            <h2>@T["bk.activity"]</h2>
+            <form method="post" asp-page-handler="ReadAll">
+                <button class="btn btn-light btn-sm" type="submit">@T["bk.readall"]</button>
+            </form>
+        </div>
+        @if (!Model.Feed.Any()) { <p class="muted">@T["bk.nofeed"]</p> }
+        <ul class="feed" id="feed">
+            @foreach (var n in Model.Feed)
+            {
+                <li class="feed-item @(n.Read ? "" : "unread")">
+                    <div class="feed-ico">@Icon(n.Type)</div>
+                    <div>
+                        <b>@T["n." + n.Type]</b>
+                        <span>@n.Body</span>
+                        <time>@AppTime.ToLocal(n.CreatedAt).ToString("d MMM, h:mm tt", Model.Cult)</time>
+                    </div>
+                </li>
+            }
+        </ul>
+    </aside>
+</section>
+
+<h2 class="section-title">@T["bk.agencies"]</h2>
+
+@if (!Model.Items.Any())
+{
+    <p style="text-align:center;color:var(--muted)">@T["bk.noagencies"]</p>
+}
+
+<section class="cards">
+    @foreach (var a in Model.Items)
+    {
+        <div class="card">
+            @if (!string.IsNullOrEmpty(a.P.LogoUrl)) { <img class="logo-img" src="@a.P.LogoUrl" alt="" /> }
+            else { <div class="icon">📣</div> }
+            <h2>@(string.IsNullOrEmpty(a.P.CompanyName) ? a.Name : a.P.CompanyName)</h2>
+            <p>@a.Email</p>
+            <a class="btn" href="/Broker/Edit?id=@a.Id">@T["bk.edit"]</a>
+            <form method="post" asp-page-handler="Delete" style="display:inline"
+                  onsubmit="return confirm('@T["bk.confirmdel"]')">
+                <input type="hidden" name="id" value="@a.Id" />
+                <button class="btn btn-light" type="submit">@T["pf.delete"]</button>
+            </form>
+        </div>
+    }
+</section>
+
+@section Scripts {
+<script>
+document.addEventListener('broker-notify', function (e) {
+  var n = e.detail, feed = document.getElementById('feed'), t = document.getElementById('toasts');
+  if (!feed) return;
+  var icons = { visit: '👀', register: '🆕', login: '🔑', meeting: '📅', agency: '🏢', chat: '💬' };
+  var li = document.createElement('li');
+  li.className = 'feed-item unread';
+  li.innerHTML = '<div class="feed-ico"></div><div><b></b><span></span><time></time></div>';
+  li.querySelector('.feed-ico').textContent = icons[n.type] || '🔔';
+  li.querySelector('b').textContent = (t && t.dataset[n.type]) || '';
+  li.querySelector('span').textContent = n.body || '';
+  li.querySelector('time').textContent = new Date().toLocaleString();
+  feed.prepend(li);
+});
+</script>
+}

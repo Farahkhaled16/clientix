@@ -1,0 +1,109 @@
+﻿@using System.Security.Claims
+@inject BrokerHub.Services.Translator T
+@inject BrokerHub.Services.FirestoreService Fs
+@{
+    var isBroker = User.IsInRole("broker");
+    var isBusiness = User.IsInRole("business");
+    var isAgency = User.IsInRole("agency");
+    var home = isBroker ? "/Broker" : isBusiness ? "/Business" : isAgency ? "/Agency" : "/";
+
+    var unread = isBroker ? await Fs.CountUnread() : 0;
+    var chatUnread = 0;
+    if (isBusiness)
+    {
+        var th = await Fs.GetThread(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        chatUnread = th?.UnreadForBusiness ?? 0;
+    }
+}
+<!DOCTYPE html>
+<html lang="@T.Lang" dir="@(T.IsRtl ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@T["site.name"]</title>
+    <link rel="icon" type="image/png" sizes="120x120" href="~/img/favicon.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/img/favicon.png" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="nav">
+        <div class="container">
+            <a href="@home" class="logo"><img src="~/img/clientix-logo.png" alt="@T["site.name"]" asp-append-version="true" />@T["site.name"]</a>
+            <div class="nav-actions">
+                @if (isBusiness)
+                {
+                    <a class="nav-link" href="/Business">@T["nav.dashboard"]</a>
+                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                    <a class="nav-link" href="/Meetings/Mine">@T["meet.mine"]</a>
+                    <a class="nav-link bell" href="/Chat" aria-label="@T["chat.title"]">💬<span id="chatBadge" class="bell-badge" hidden="@(chatUnread == 0)">@chatUnread</span></a>
+                }
+                else if (isBroker)
+                {
+                    <a class="nav-link" href="/Broker">@T["nav.dashboard"]</a>
+                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                    <a class="nav-link" href="/Broker/Chat">@T["bk.chat"]</a>
+                    <a class="nav-link bell" href="/Broker#activity" aria-label="@T["bk.activity"]">🔔<span id="bellCount" class="bell-badge" hidden="@(unread == 0)">@unread</span></a>
+                }
+                else if (isAgency)
+                {
+                    <a class="nav-link" href="/Agency">@T["nav.myprofile"]</a>
+                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                }
+                else
+                {
+                    <a class="nav-link" href="/Agencies">@T["nav.agencies"]</a>
+                }
+
+                <a class="lang-switch"
+                   href="/setlang?lang=@(T.Lang == "ar" ? "en" : "ar")&returnUrl=@Context.Request.Path">
+                    @T["lang.switch"]
+                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" action="/logout" style="display:inline">
+                        <button class="lang-switch" type="submit">@T["auth.logout"]</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="lang-switch" href="/Account/Login">@T["auth.login"]</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">© @DateTime.Now.Year @T["site.name"] — @T["footer.rights"]</footer>
+
+    @if (isBroker)
+    {
+        <div id="toasts" class="toasts"
+             data-visit="@T["n.visit"]" data-register="@T["n.register"]" data-login="@T["n.login"]"
+             data-meeting="@T["n.meeting"]" data-agency="@T["n.agency"]" data-chat="@T["n.chat"]"></div>
+    }
+    @if (isBusiness)
+    {
+        <div id="toasts" class="toasts" data-chat="@T["chat.newmsg"]"></div>
+    }
+    @if (isBroker || isBusiness)
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    }
+    @if (isBroker)
+    {
+        <script src="~/js/broker-live.js" asp-append-version="true"></script>
+    }
+    @if (isBusiness)
+    {
+        <script src="~/js/chat-badge.js" asp-append-version="true"></script>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
