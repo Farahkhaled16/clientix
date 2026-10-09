@@ -24,11 +24,10 @@ public class IndexModel : PageModel
 
         if (!string.IsNullOrEmpty(about))
         {
-            var a = await _fs.GetUserById(about);
-            if (a != null && a.Role == "agency")
+            var pf = await _fs.GetPortfolio(about);
+            if (pf != null && !string.IsNullOrWhiteSpace(pf.CompanyName))
             {
-                var pf = await _fs.GetPortfolio(a.Id);
-                About = string.IsNullOrEmpty(pf?.CompanyName) ? a.Name : pf!.CompanyName;
+                About = pf.CompanyName;
                 Prefill = $"{_t["chat.prefill"]} {About}";
             }
         }

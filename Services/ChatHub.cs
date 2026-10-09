@@ -10,7 +10,11 @@ public class ChatHub : Hub
 {
     private readonly FirestoreService _fs;
     private readonly NotifyService _notify;
-    public ChatHub(FirestoreService fs, NotifyService notify) { _fs = fs; _notify = notify; }
+    private readonly PushService _push;
+    private readonly Translator _t;
+
+    public ChatHub(FirestoreService fs, NotifyService notify, PushService push, Translator t)
+    { _fs = fs; _notify = notify; _push = push; _t = t; }
 
     private bool IsBroker => Context.User!.IsInRole("broker");
     private string UserId => Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -22,7 +26,6 @@ public class ChatHub : Hub
         await base.OnConnectedAsync();
     }
 
-    // الـ Broker يدخل غرفة المحادثة اللي فاتحها
     public Task JoinThread(string threadId) =>
         IsBroker ? Groups.AddToGroupAsync(Context.ConnectionId, "t:" + threadId) : Task.CompletedTask;
 
@@ -31,11 +34,11 @@ public class ChatHub : Hub
         text = (text ?? "").Trim();
         if (text.Length == 0 || text.Length > 2000) return;
 
-        var tid = IsBroker ? threadId : UserId;     // الـ Business مايقدرش يكتب في محادثة غيره
+        var tid = IsBroker ? threadId : UserId;
         if (string.IsNullOrEmpty(tid)) return;
 
         var thread = await _fs.GetThread(tid);
-        if (IsBroker && thread == null) return;     // الـ Broker يرد بس على محادثة موجودة
+        if (IsBroker && thread == null) return;
         var name = Context.User!.Identity?.Name ?? "";
         thread ??= new ChatThread { Id = tid, BusinessName = name };
 
@@ -73,9 +76,12 @@ public class ChatHub : Hub
             role = msg.SenderRole
         });
 
-        // إشعار للـ Broker عند أول رسالة غير مقروءة بس (عشان مايتزعجش)
         if (firstUnread)
             await _notify.Push("chat", $"{name}: {thread.LastText}", "/Broker/Chat?thread=" + tid);
+
+        // رد الوسيط يوصل الـ Business كـ Push (لو الصفحة مفتوحة قدامه مبتظهرش مرتين)
+        if (IsBroker)
+            await _push.SendTo(tid, _t["chat.newmsg"], thread.LastText, "/Chat");
     }
 
     public async Task MarkRead(string? threadId)

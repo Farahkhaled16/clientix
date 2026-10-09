@@ -4,7 +4,7 @@
 @inject BrokerHub.Services.Translator T
 
 <section class="hero" style="padding-bottom:10px">
-    <h1>@(Model.IsNew ? T["bk.newtitle"] : T["bk.edit"])</h1>
+    <h1>@(Model.IsNew? T["bk.newtitle"] : T["bk.edit"])</h1>
 </section>
 
 @if (Model.Error != null)
@@ -26,7 +26,6 @@
     <p class="form-link">@T["pf.autofill.desc"]</p>
     <form method="post" asp-page-handler="Autofill" enctype="multipart/form-data">
         <input type="hidden" name="id" value="@Model.Id" />
-        <input type="hidden" name="email" value="@Model.Email" />
         <input type="file" name="cv" accept=".pdf,.docx,.jpg,.jpeg,.png,.webp" required />
         <button class="btn" type="submit">@T["pf.autofill.btn"]</button>
     </form>
@@ -38,14 +37,6 @@
 <div class="form-box wide">
     <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" value="@Model.Id" />
-
-        @if (Model.IsNew)
-        {
-            <label>@T["auth.email"]</label>
-            <input type="email" name="email" value="@Model.Email" required />
-            <label>@T["auth.password"]</label>
-            <input type="password" name="password" required minlength="6" />
-        }
 
         <label>@T["pf.company"]</label>
         <input type="text" name="CompanyName" value="@Model.P.CompanyName" required />

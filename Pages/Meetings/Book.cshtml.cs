@@ -22,12 +22,9 @@ public class BookModel : PageModel
     private async Task LoadAgency()
     {
         if (string.IsNullOrEmpty(AgencyId)) return;
-        var a = await _fs.GetUserById(AgencyId);
-        if (a != null && a.Role == "agency")
-        {
-            var pf = await _fs.GetPortfolio(a.Id);
-            AgencyName = string.IsNullOrEmpty(pf?.CompanyName) ? a.Name : pf!.CompanyName;
-        }
+        var pf = await _fs.GetPortfolio(AgencyId);
+        if (pf != null && !string.IsNullOrWhiteSpace(pf.CompanyName)) AgencyName = pf.CompanyName;
+        else AgencyId = null;
     }
 
     public async Task OnGetAsync() => await LoadAgency();

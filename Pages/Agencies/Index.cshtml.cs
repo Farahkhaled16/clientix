@@ -19,14 +19,10 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        var agencies = await _fs.GetAgencies();
-        var portfolios = (await _fs.GetAllPortfolios()).ToDictionary(p => p.AgencyId);
-
-        Items = agencies.Select(a => new AgencyCard
-        {
-            Id = a.Id,
-            Name = a.Name,
-            P = portfolios.TryGetValue(a.Id, out var p) ? p : new Portfolio()
-        }).ToList();
+        Items = (await _fs.GetAllPortfolios())
+            .Where(p => !string.IsNullOrWhiteSpace(p.CompanyName))
+            .OrderBy(p => p.CompanyName)
+            .Select(p => new AgencyCard { Id = p.AgencyId, Name = p.CompanyName, P = p })
+            .ToList();
     }
 }

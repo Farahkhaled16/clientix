@@ -30,7 +30,7 @@ public class IndexModel : PageModel
         Name = User.Identity?.Name ?? "";
         Email = User.FindFirstValue(ClaimTypes.Email) ?? "";
 
-        var all = await _fs.GetMeetingsByBusiness(uid);   // مرتبة من الأحدث للأقدم
+        var all = await _fs.GetMeetingsByBusiness(uid);
         var now = DateTime.UtcNow;
         Total = all.Count;
 
@@ -50,14 +50,11 @@ public class IndexModel : PageModel
             else Countdown = $"{_t["bz.in"]} {(int)diff.TotalDays} {_t["bz.days"]}";
         }
 
-        var agencies = await _fs.GetAgencies();
-        AgencyTotal = agencies.Count;
-        var pf = (await _fs.GetAllPortfolios()).ToDictionary(p => p.AgencyId);
-        Agencies = agencies.Take(8).Select(a => new BrokerHub.Pages.Agencies.AgencyCard
-        {
-            Id = a.Id,
-            Name = a.Name,
-            P = pf.TryGetValue(a.Id, out var p) ? p : new Portfolio()
-        }).ToList();
+        var portfolios = (await _fs.GetAllPortfolios())
+            .Where(p => !string.IsNullOrWhiteSpace(p.CompanyName)).ToList();
+        AgencyTotal = portfolios.Count;
+        Agencies = portfolios.Take(8)
+            .Select(p => new BrokerHub.Pages.Agencies.AgencyCard { Id = p.AgencyId, Name = p.CompanyName, P = p })
+            .ToList();
     }
 }

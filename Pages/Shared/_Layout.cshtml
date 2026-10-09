@@ -1,6 +1,7 @@
 ﻿@using System.Security.Claims
 @inject BrokerHub.Services.Translator T
 @inject BrokerHub.Services.FirestoreService Fs
+@inject Microsoft.Extensions.Configuration.IConfiguration Cfg
 @{
     var isBroker = User.IsInRole("broker");
     var isBusiness = User.IsInRole("business");
@@ -12,14 +13,14 @@
         exact ? path.Equals(p, StringComparison.OrdinalIgnoreCase) : path.StartsWith(p, StringComparison.OrdinalIgnoreCase);
 
     var uid = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
-    var unread = isBroker ? await Fs.CountUnread() : 0;
-    var userUnread = (isBusiness || isAgency) ? await Fs.CountUserUnread(uid) : 0;
+    var notifCount = isBroker ? await Fs.CountUnread() : (isBusiness || isAgency) ? await Fs.CountUserUnread(uid) : 0;
     var chatUnread = 0;
     if (isBusiness)
     {
         var th = await Fs.GetThread(uid);
         chatUnread = th?.UnreadForBusiness ?? 0;
     }
+    var allUrl = isBroker ? "/Broker#activity" : "/Notifications";
 }
 <!DOCTYPE html>
 <html lang="@T.Lang" dir="@(T.IsRtl ? "rtl" : "ltr")">
@@ -27,17 +28,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#26313A" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Clientix" />
     <title>@T["site.name"]</title>
+    <link rel="manifest" href="~/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="~/img/logo-mark.svg" />
+    <link rel="apple-touch-icon" href="~/img/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
 </head>
-<body class="@(authed ? "has-tabs" : "")">
+<body class="@(authed ? "has-tabs" : "")" data-role="@(isBroker ? "broker" : isBusiness ? "business" : isAgency ? "agency" : "")">
     <header class="nav">
         <div class="container">
-            <a href="@home" class="logo"><img src="~/img/clientix-logo.png" alt="Clientix" /></a>
+            <a href="@home" class="logo"><img src="~/img/clientix-logo.png" alt="" /><span class="logo-text">@T["site.name"]</span></a>
 
             <nav class="nav-links @(authed ? "tabs" : "")">
                 @if (isBusiness)
@@ -46,20 +52,17 @@
                     <a class="nav-link @(On("/Agenc") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
                     <a class="nav-link @(On("/Meetings") ? "active" : "")" href="/Meetings/Mine"><span class="ico">📅</span><span class="lbl">@T["meet.mine"]</span></a>
                     <a class="nav-link bell @(On("/Chat") ? "active" : "")" href="/Chat" aria-label="@T["chat.title"]"><span class="ico">💬</span><span class="lbl">@T["nav.chat"]</span><span id="chatBadge" class="bell-badge" hidden="@(chatUnread == 0)">@chatUnread</span></a>
-                    <a class="nav-link bell @(On("/Notifications") ? "active" : "")" href="/Notifications" aria-label="@T["notif.title"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="userBell" class="bell-badge" hidden="@(userUnread == 0)">@userUnread</span></a>
                 }
                 else if (isBroker)
                 {
                     <a class="nav-link @(On("/Broker", true) ? "active" : "")" href="/Broker"><span class="ico">🏠</span><span class="lbl">@T["nav.dashboard"]</span></a>
                     <a class="nav-link @(On("/Agenc") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
                     <a class="nav-link @(On("/Broker/Chat") ? "active" : "")" href="/Broker/Chat"><span class="ico">💬</span><span class="lbl">@T["bk.chat"]</span></a>
-                    <a class="nav-link bell" href="/Broker#activity" aria-label="@T["bk.activity"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="bellCount" class="bell-badge" hidden="@(unread == 0)">@unread</span></a>
                 }
                 else if (isAgency)
                 {
                     <a class="nav-link @(On("/Agency", true) ? "active" : "")" href="/Agency"><span class="ico">🏠</span><span class="lbl">@T["nav.myprofile"]</span></a>
                     <a class="nav-link @(On("/Agencies") ? "active" : "")" href="/Agencies"><span class="ico">🏢</span><span class="lbl">@T["nav.agencies"]</span></a>
-                    <a class="nav-link bell @(On("/Notifications") ? "active" : "")" href="/Notifications" aria-label="@T["notif.title"]"><span class="ico">🔔</span><span class="lbl">@T["nav.alerts"]</span><span id="userBell" class="bell-badge" hidden="@(userUnread == 0)">@userUnread</span></a>
                 }
                 else
                 {
@@ -68,6 +71,20 @@
             </nav>
 
             <div class="nav-actions">
+                @if (authed)
+                {
+                    <div class="notif-wrap">
+                        <button id="notifBtn" class="notif-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="@T["notif.title"]">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                            <span id="notifBadge" class="bell-badge" hidden="@(notifCount == 0)">@notifCount</span>
+                        </button>
+                        <div id="notifPop" class="notif-pop" hidden data-empty="@T["notif.none"]">
+                            <div class="np-head"><b>@T["notif.title"]</b></div>
+                            <div id="notifList" class="np-list"></div>
+                            <a class="np-foot" href="@allUrl">@T["notif.viewall"]</a>
+                        </div>
+                    </div>
+                }
                 <a class="lang-switch"
                    href="/setlang?lang=@(T.Lang == "ar" ? "en" : "ar")&returnUrl=@Context.Request.Path">
                     @T["lang.switch"]
@@ -90,36 +107,50 @@
         @RenderBody()
     </main>
 
-    <footer class="footer">© @DateTime.Now.Year @T["site.name"] — @T["footer.rights"]</footer>
+    <footer class="footer">
+        <div>© @DateTime.Now.Year @T["site.name"] — @T["footer.rights"]</div>
+        <div class="footer-tools">
+            <button id="installBtn" class="btn btn-light btn-sm" type="button" hidden>📲 @T["pwa.install"]</button>
+            <p id="iosHint" class="ios-hint" hidden>@T["pwa.ios"]</p>
+        </div>
+    </footer>
 
-    @if (isBroker)
+    @if (authed)
     {
         <div id="toasts" class="toasts"
              data-visit="@T["n.visit"]" data-register="@T["n.register"]" data-login="@T["n.login"]"
-             data-meeting="@T["n.meeting"]" data-agency="@T["n.agency"]" data-chat="@T["n.chat"]"
-             data-reminder="@T["n.reminder"]"></div>
-    }
-    @if (isBusiness || isAgency)
-    {
-        <div id="toasts" class="toasts" data-chat="@T["chat.newmsg"]"
+             data-meeting="@T["n.meeting"]" data-agency="@T["n.agency"]"
+             data-chat="@(isBusiness? T["chat.newmsg"] : T["n.chat"])"
              data-approved="@T["n.approved"]" data-rejected="@T["n.rejected"]"
              data-cancelled="@T["n.cancelled"]" data-reminder="@T["n.reminder"]"></div>
+
+        <div id="pushCfg" hidden
+             data-api-key="@Cfg["FirebaseWeb:ApiKey"]" data-project="@Cfg["Firebase:ProjectId"]"
+             data-sender="@Cfg["FirebaseWeb:SenderId"]" data-app="@Cfg["FirebaseWeb:AppId"]"
+             data-vapid="@Cfg["FirebaseWeb:Vapid"]" data-uid="@uid"></div>
+
+        <div id="pushPrompt" class="push-prompt" hidden>
+            <span>🔔 @T["push.ask"]</span>
+            <div>
+                <button id="pushYes" class="btn btn-sm" type="button">@T["push.enable"]</button>
+                <button id="pushLater" class="btn btn-light btn-sm" type="button">@T["push.later"]</button>
+            </div>
+        </div>
     }
-    @if (isBroker || isBusiness || isAgency)
+
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
+    @if (authed)
     {
+        <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
-    }
-    @if (isBroker)
-    {
-        <script src="~/js/broker-live.js" asp-append-version="true"></script>
+        <script src="~/js/push.js" asp-append-version="true"></script>
+        <script src="~/js/notif.js" asp-append-version="true"></script>
+        <script src="~/js/live.js" asp-append-version="true"></script>
     }
     @if (isBusiness)
     {
         <script src="~/js/chat-badge.js" asp-append-version="true"></script>
-    }
-    @if (isBusiness || isAgency)
-    {
-        <script src="~/js/user-live.js" asp-append-version="true"></script>
     }
 
     @await RenderSectionAsync("Scripts", required: false)

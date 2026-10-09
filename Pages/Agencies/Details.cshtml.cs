@@ -9,15 +9,16 @@ public class DetailsModel : PageModel
     private readonly FirestoreService _fs;
     public DetailsModel(FirestoreService fs) => _fs = fs;
 
-    public AppUser? Agency { get; set; }
+    public AppUser? Agency { get; set; }     // بنسيب الاسم زي ما هو عشان الصفحة مش تتغير
     public Portfolio P { get; set; } = new();
 
     public async Task OnGetAsync(string? id)
     {
         if (string.IsNullOrEmpty(id)) return;
-        var user = await _fs.GetUserById(id);
-        if (user == null || user.Role != "agency" || !user.EmailConfirmed) return;
-        Agency = user;
-        P = await _fs.GetPortfolio(id) ?? new Portfolio();
+        var pf = await _fs.GetPortfolio(id);
+        if (pf == null || string.IsNullOrWhiteSpace(pf.CompanyName)) return;
+
+        P = pf;
+        Agency = new AppUser { Id = id, Name = pf.CompanyName, Role = "agency" };
     }
 }

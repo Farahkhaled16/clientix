@@ -10,7 +10,6 @@ public class AgencyRow
 {
     public string Id { get; set; } = "";
     public string Name { get; set; } = "";
-    public string Email { get; set; } = "";
     public Portfolio P { get; set; } = new();
 }
 
@@ -33,16 +32,11 @@ public class IndexModel : PageModel
     {
         Msg = msg;
 
-        var agencies = await _fs.GetAllAgencies();
-        var pf = (await _fs.GetAllPortfolios()).ToDictionary(p => p.AgencyId);
-        Items = agencies.Select(a => new AgencyRow
-        {
-            Id = a.Id,
-            Name = a.Name,
-            Email = a.Email,
-            P = pf.TryGetValue(a.Id, out var p) ? p : new Portfolio()
-        }).ToList();
-        AgencyCount = agencies.Count;
+        Items = (await _fs.GetAllPortfolios())
+            .OrderBy(p => p.CompanyName)
+            .Select(p => new AgencyRow { Id = p.AgencyId, Name = p.CompanyName, P = p })
+            .ToList();
+        AgencyCount = Items.Count;
         BusinessCount = await _fs.CountUsers("business");
 
         var now = DateTime.UtcNow;
@@ -69,7 +63,6 @@ public class IndexModel : PageModel
             if (all.Any(x => x.Id != m.Id && x.Status == "approved" && Math.Abs((x.StartsAt - m.StartsAt).TotalMinutes) < 30))
                 return RedirectToPage(new { msg = "meet.conflict" });
 
-            // لو الميعاد قريب، منبعتش تذكير فات وقته
             var diff = m.StartsAt - DateTime.UtcNow;
             m.ReminderDaySent = diff <= TimeSpan.FromHours(24);
             m.ReminderHourSent = diff <= TimeSpan.FromHours(1);

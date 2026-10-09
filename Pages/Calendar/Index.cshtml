@@ -9,6 +9,35 @@
 </section>
 
 <div class="cal-stack">
+    @if (Model.Flash == "connected")
+    {
+        <div class="alert ok">@T["gcal.ok"]</div>
+    }
+    @if (Model.Flash == "denied")
+    {
+        <div class="alert">@T["gcal.denied"]</div>
+    }
+    @if (Model.Flash == "off")
+    {
+        <div class="alert ok">@T["gcal.off"]</div>
+    }
+
+    <div class="panel cal-card">
+        <h2>⚡ @T["gcal.title"]</h2>
+        <p class="muted">@T["gcal.desc"]</p>
+        @if (Model.GoogleConnected)
+        {
+            <span class="pill approved">✓ @T["gcal.connected"]</span>
+            <form method="post" action="/gcal/disconnect">
+                <button class="btn btn-light btn-sm" type="submit">@T["gcal.disconnect"]</button>
+            </form>
+        }
+        else
+        {
+            <a class="btn" href="/gcal/connect">@T["gcal.connect"]</a>
+        }
+    </div>
+
     @if (Model.IsLocal)
     {
         <div class="alert">@T["cal.local"]</div>

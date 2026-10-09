@@ -236,4 +236,31 @@ public class FirestoreService
         foreach (var d in snap.Documents) batch.Update(d.Reference, "Read", true);
         await batch.CommitAsync();
     }
+
+    // ---------- Push tokens ----------
+    public async Task SavePushToken(PushToken t) =>
+        await Db.Collection("push_tokens").Document(t.Id).SetAsync(t);
+
+    public async Task<List<PushToken>> GetPushTokens(string userId)
+    {
+        var snap = await Db.Collection("push_tokens").WhereEqualTo("UserId", userId).GetSnapshotAsync();
+        return snap.Documents.Select(d => d.ConvertTo<PushToken>()).ToList();
+    }
+
+    public async Task DeletePushToken(string id) =>
+        await Db.Collection("push_tokens").Document(id).DeleteAsync();
+
+    // ---------- Google Calendar links ----------
+    public async Task<CalendarLink?> GetCalendarLink(string userId)
+    {
+        var snap = await Db.Collection("calendar_links").Document(userId).GetSnapshotAsync();
+        return snap.Exists ? snap.ConvertTo<CalendarLink>() : null;
+    }
+
+    public async Task SaveCalendarLink(CalendarLink l) =>
+        await Db.Collection("calendar_links").Document(l.UserId).SetAsync(l);
+
+    public async Task DeleteCalendarLink(string userId) =>
+        await Db.Collection("calendar_links").Document(userId).DeleteAsync();
+
 }

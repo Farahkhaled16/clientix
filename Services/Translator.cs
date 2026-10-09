@@ -267,6 +267,37 @@ public class Translator
         ["cal.tips.2"] = ("في Google Calendar افتح إعدادات تقويم Clientix وضيف إشعارات قبل يوم وقبل ساعة (مرة واحدة)، لأن جوجل بتستخدم إعدادات التقويم بدل تنبيهات الملف.", "In Google Calendar open the Clientix calendar settings and add notifications 1 day and 1 hour before (one time), because Google uses the calendar's settings instead of the file's alerts."),
         ["cal.tips.3"] = ("أي ميعاد جديد أو إلغاء بيظهر في التقويم بعد فترة (آبل غالبًا خلال ساعة، وجوجل ممكن لحد يوم). الإيميل والإشعارات جوه الموقع لحظيين.", "New or cancelled meetings show up in the calendar after a while (Apple usually within an hour, Google up to a day). Email and in-site notifications are instant."),
         ["cal.tips.4"] = ("الرابط خاص بيك، متشاركوش مع حد.", "This link is private, do not share it."),
+        ["notif.viewall"] = ("عرض كل الإشعارات", "View all notifications"),
+
+        ["push.ask"] = ("فعّل الإشعارات عشان توصلك المواعيد والرسائل حتى لو الموقع مقفول", "Turn on notifications to get meetings and messages even when the site is closed"),
+        ["push.enable"] = ("تفعيل", "Enable"),
+        ["push.later"] = ("لاحقًا", "Later"),
+
+        ["pwa.install"] = ("ثبّت التطبيق", "Install the app"),
+        ["pwa.ios"] = ("على iPhone: اضغط زرار المشاركة ثم «إضافة إلى الشاشة الرئيسية» عشان تثبّت التطبيق وتفعّل الإشعارات.",
+                   "On iPhone: tap Share, then \"Add to Home Screen\" to install the app and enable notifications."),
+
+        ["gcal.title"] = ("ربط مباشر مع Google Calendar", "Direct Google Calendar link"),
+        ["gcal.desc"] = ("اربط حسابك مرة واحدة، وأي ميعاد يتأكد بيتضاف لتقويمك فورًا ومعاه تنبيه قبل يوم وقبل ساعة، ولو اتلغى بيتمسح لوحده.",
+                       "Connect once. Confirmed meetings are added to your calendar instantly with alerts 1 day and 1 hour before, and removed if cancelled."),
+        ["gcal.connect"] = ("ربط Google Calendar", "Connect Google Calendar"),
+        ["gcal.connected"] = ("مربوط", "Connected"),
+        ["gcal.disconnect"] = ("فصل الربط", "Disconnect"),
+        ["gcal.ok"] = ("تم الربط، ومواعيدك المؤكدة اتضافت لتقويمك ✅", "Connected. Your confirmed meetings were added to your calendar ✅"),
+        ["gcal.denied"] = ("تعذّر الربط. تأكد إنك وافقت على إذن التقويم وجرّب تاني.", "Could not connect. Make sure you allowed calendar access and try again."),
+        ["gcal.off"] = ("تم فصل الربط", "Disconnected"),
+        ["home.btn.explore"] = ("تصفح الوكالات", "Browse agencies"),
+        ["home.btn.signin"] = ("دخول / إنشاء حساب", "Sign in / Create account"),
+        ["home.s1.t"] = ("تصفّح الوكالات", "Browse agencies"),
+        ["home.s1.d"] = ("شوف وكالات التسويق المعتمدة وأعمالها وخدماتها من غير ما تسجّل.", "See vetted marketing agencies, their work and services, no sign-up needed."),
+        ["home.s2.t"] = ("كلّم الوسيط", "Talk to the broker"),
+        ["home.s2.d"] = ("سجّل حساب وابعت للوسيط احتياجك وهو يرشّح لك الوكالة المناسبة.", "Create an account and tell the broker what you need. They recommend the right agency."),
+        ["home.s3.t"] = ("احجز ميعاد", "Book a meeting"),
+        ["home.s3.d"] = ("اختار الوقت والوسيط يأكده، وهيجيلك تذكير وإشعار على موبايلك.", "Pick a time, the broker confirms it, and you get reminders and notifications on your phone."),
+        ["home.cta.t"] = ("جاهز تبدأ؟", "Ready to start?"),
+        ["home.cta.d"] = ("اعمل حساب لشركتك في دقيقة وكلّم الوسيط.", "Create your company account in a minute and talk to the broker."),
+        ["home.cta.btn"] = ("إنشاء حساب شركة", "Create a company account"),
+        ["pf.nocompany"] = ("اسم الشركة مطلوب", "Company name is required"),
     };
 
 }

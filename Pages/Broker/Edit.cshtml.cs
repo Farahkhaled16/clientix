@@ -10,19 +10,17 @@ namespace BrokerHub.Pages.Broker;
 public class EditModel : PageModel
 {
     private readonly FirestoreService _fs;
-    private readonly AuthService _auth;
     private readonly FileStorage _files;
     private readonly AutofillService _ai;
 
-    public EditModel(FirestoreService fs, AuthService auth, FileStorage files, AutofillService ai)
-    { _fs = fs; _auth = auth; _files = files; _ai = ai; }
+    public EditModel(FirestoreService fs, FileStorage files, AutofillService ai)
+    { _fs = fs; _files = files; _ai = ai; }
 
     [BindProperty(SupportsGet = true)] public string? Id { get; set; }
     public bool IsNew => string.IsNullOrEmpty(Id);
     public Portfolio P { get; set; } = new();
     public string? Error { get; set; }
     public string? Note { get; set; }
-    public string? Email { get; set; }
     public bool Saved { get; set; }
 
     private async Task<Portfolio> Load() =>
@@ -35,9 +33,8 @@ public class EditModel : PageModel
     }
 
     // Autofill: يملا الفورم من غير حفظ
-    public async Task<IActionResult> OnPostAutofillAsync(IFormFile? cv, string? email)
+    public async Task<IActionResult> OnPostAutofillAsync(IFormFile? cv)
     {
-        Email = email;
         P = await Load();
 
         if (cv == null || cv.Length == 0) { Error = "pf.nofile"; return Page(); }
@@ -59,33 +56,17 @@ public class EditModel : PageModel
         return Page();
     }
 
-    // حفظ البروفايل
-    public async Task<IActionResult> OnPostAsync(Portfolio form, string? email, string? password, IFormFile? logoFile)
+    // حفظ البروفايل (وكالة جديدة أو تعديل)
+    public async Task<IActionResult> OnPostAsync(Portfolio form, IFormFile? logoFile)
     {
-        if (IsNew)
-        {
-            email = (email ?? "").Trim().ToLower();
-            Email = email;
-            if (string.IsNullOrEmpty(password) || password.Length < 6)
-            { Error = "auth.weak"; P = form; return Page(); }
-            if (await _fs.GetUserByEmail(email) != null)
-            { Error = "auth.exists"; P = form; return Page(); }
+        var name = (form.CompanyName ?? "").Trim();
+        if (name.Length == 0) { Error = "pf.nocompany"; P = form; return Page(); }
 
-            var user = new AppUser
-            {
-                Name = form.CompanyName.Trim(),
-                Email = email,
-                Role = "agency",
-                EmailConfirmed = true
-            };
-            user.PasswordHash = _auth.Hash(user, password);
-            await _fs.CreateUser(user);
-            Id = user.Id;
-        }
+        if (IsNew) Id = Guid.NewGuid().ToString("N");   // معرّف الوكالة الجديدة
 
         var p = await _fs.GetPortfolio(Id!) ?? new Portfolio();
         p.AgencyId = Id!;
-        p.CompanyName = form.CompanyName.Trim();
+        p.CompanyName = name;
         p.About = form.About ?? "";
         p.Services = form.Services ?? "";
         p.City = form.City ?? "";

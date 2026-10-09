@@ -6,21 +6,35 @@
     <div class="hero-panel">
         <h1>@T["hero.title"]</h1>
         <p>@T["hero.subtitle"]</p>
+        <div class="hero-cta">
+            <a class="btn btn-white" href="/Agencies">@T["home.btn.explore"]</a>
+            <a class="btn btn-ghost" href="/Account/Login?role=business">@T["home.btn.signin"]</a>
+        </div>
     </div>
 </section>
 
-<section class="role-grid">
-    <div class="role-card">
-        <div class="role-icon">🏢</div>
-        <h2>@T["role.business"]</h2>
-        <p>@T["role.business.desc"]</p>
-        <a class="btn" href="/Agencies">@T["btn.continue"]</a>
+<section class="steps">
+    <div class="step">
+        <div class="step-n">01</div>
+        <h2>@T["home.s1.t"]</h2>
+        <p>@T["home.s1.d"]</p>
     </div>
+    <div class="step">
+        <div class="step-n">02</div>
+        <h2>@T["home.s2.t"]</h2>
+        <p>@T["home.s2.d"]</p>
+    </div>
+    <div class="step">
+        <div class="step-n">03</div>
+        <h2>@T["home.s3.t"]</h2>
+        <p>@T["home.s3.d"]</p>
+    </div>
+</section>
 
-    <div class="role-card alt">
-        <div class="role-icon">📣</div>
-        <h2>@T["role.agency"]</h2>
-        <p>@T["role.agency.desc"]</p>
-        <a class="btn btn-white" href="/Account/Login?role=agency">@T["btn.continue"]</a>
+<section class="cta-band">
+    <div>
+        <h2>@T["home.cta.t"]</h2>
+        <p>@T["home.cta.d"]</p>
     </div>
+    <a class="btn btn-white" href="/Account/Register?role=business">@T["home.cta.btn"]</a>
 </section>
