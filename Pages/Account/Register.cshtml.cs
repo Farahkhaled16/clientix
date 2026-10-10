@@ -24,16 +24,17 @@ public class RegisterModel : PageModel
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            var r = User.IsInRole("broker") ? "broker" : User.IsInRole("agency") ? "agency" : "business";
+            var r = User.IsInRole("broker") ? "broker" : "business";
             return LocalRedirect(AuthService.Target(ReturnUrl, r));
         }
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(string name, string email, string password)
+    public async Task<IActionResult> OnPostAsync(string name, string email, string password, bool accept)
     {
+        if (!accept) { Error = "auth.mustaccept"; return Page(); }
+
         email = (email ?? "").Trim().ToLower();
-        var role = "business";   // الـ agencies بيعملها الـ Broker بس
 
         if (string.IsNullOrEmpty(password) || password.Length < 6)
         { Error = "auth.weak"; return Page(); }
@@ -43,23 +44,31 @@ public class RegisterModel : PageModel
 
         var user = new AppUser
         {
-            Name = name.Trim(),
+            Name = (name ?? "").Trim(),
             Email = email,
-            Role = role,
+            Role = "business",
             EmailConfirmed = false,
-            ConfirmToken = AuthService.NewToken()
+            ConfirmToken = AuthService.NewToken(),
+            AcceptedTermsAt = DateTime.UtcNow
         };
         user.PasswordHash = _auth.Hash(user, password);
         await _fs.CreateUser(user);
 
-        await _notify.Push("register", $"{user.Name} - {user.Email} ({user.Role})");
+        await _notify.Push("register", $"{user.Name} - {user.Email}");
 
         try
         {
             await _mail.SendConfirm(user.Email,
                 $"{Request.Scheme}://{Request.Host}/Account/Confirm?token={user.ConfirmToken}");
         }
-        catch { Error = "auth.mailfail"; return Page(); }
+        catch (Exception ex)
+        {
+            var link = $"{Request.Scheme}://{Request.Host}/Account/Confirm?token={user.ConfirmToken}";
+            Console.WriteLine("CONFIRM LINK: " + link);
+            Error = "MAIL: " + ex.Message;
+            return Page();
+        }
+
 
         Done = true;
         return Page();

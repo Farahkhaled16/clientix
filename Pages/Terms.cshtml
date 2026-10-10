@@ -1,0 +1,85 @@
+﻿@page "/Terms"
+@inject BrokerHub.Services.Translator T
+@inject Microsoft.Extensions.Configuration.IConfiguration Cfg
+@{
+    var mail = Cfg["Legal:ContactEmail"] ?? Cfg["Email:User"] ?? "";
+}
+
+<article class="legal">
+    @if (T.IsRtl)
+    {
+        <h1>الشروط والأحكام</h1>
+        <p class="updated">آخر تحديث: 10 أكتوبر 2026</p>
+
+        <h2>1. القبول</h2>
+        <p>باستخدامك Clientix أو إنشاء حساب فيها فأنت توافق على هذه الشروط وعلى <a href="/Privacy">سياسة الخصوصية</a>. إذا لم توافق فلا تستخدم المنصة.</p>
+
+        <h2>2. طبيعة الخدمة</h2>
+        <p>Clientix منصة وساطة: نعرض بروفايلات وكالات تسويق ونتيح لك التواصل مع وسيط لترشيح الوكالة المناسبة وحجز مواعيد. الوكالات جهات مستقلة، وأي اتفاق أو تعاقد يتم بينك وبين الوكالة مباشرة، ولسنا طرفًا فيه ولا نضمن جودة الخدمة أو نتائجها.</p>
+
+        <h2>3. الحساب</h2>
+        <p>يجب أن تكون بياناتك صحيحة، وأنت مسؤول عن سرية كلمة المرور وعن كل نشاط يتم من حسابك. حسابات الشركات للبالغين الذين لهم صلاحية التصرف باسم شركاتهم.</p>
+
+        <h2>4. المواعيد والتواصل</h2>
+        <p>طلبات المواعيد تخضع لموافقة الوسيط، ويحق له قبولها أو رفضها أو إلغاؤها. قد نرسل لك تذكيرات وإشعارات متعلقة بمواعيدك وطلباتك.</p>
+
+        <h2>5. الاستخدام المقبول</h2>
+        <p>يُمنع استخدام المنصة في أي نشاط غير قانوني، أو إرسال رسائل مزعجة أو برمجيات ضارة، أو انتحال شخصية، أو جمع بيانات المنصة آليًا، أو رفع ملفات لا تملك حق نشرها.</p>
+
+        <h2>6. المحتوى</h2>
+        <p>تحتفظ بملكية ما ترسله، وتمنحنا ترخيصًا محدودًا لتخزينه وعرضه للأطراف المعنية بالقدر اللازم لتشغيل الخدمة.</p>
+
+        <h2>7. بيانات الوكالات</h2>
+        <p>معلومات الوكالات تُدار بواسطة الوسيط للإرشاد فقط وقد تتغير، ولا تُعد عرضًا تعاقديًا.</p>
+
+        <h2>8. إخلاء المسؤولية وحدود المسؤولية</h2>
+        <p>تُقدَّم الخدمة «كما هي» دون ضمانات من أي نوع، وبالحد الأقصى الذي يسمح به القانون لا نتحمل مسؤولية أي خسائر غير مباشرة أو خسارة أرباح أو نتائج التعامل مع الوكالات.</p>
+
+        <h2>9. الإنهاء</h2>
+        <p>يمكنك التوقف عن الاستخدام وطلب حذف حسابك في أي وقت، ويحق لنا تعليق أو إغلاق الحسابات المخالفة لهذه الشروط.</p>
+
+        <h2>10. التعديلات والقانون الواجب التطبيق</h2>
+        <p>قد نعدّل هذه الشروط وسنغيّر تاريخ آخر تحديث. تخضع هذه الشروط لقوانين جمهورية مصر العربية.</p>
+
+        <h2>11. التواصل</h2>
+        <p><a href="Clientix0@gmail.com">@mail</a></p>
+    }
+    else
+    {
+        <h1>Terms of Service</h1>
+        <p class="updated">Last updated: October 10, 2026</p>
+
+        <h2>1. Acceptance</h2>
+        <p>By using Clientix or creating an account you agree to these Terms and to the <a href="/Privacy">Privacy Policy</a>. If you do not agree, do not use the platform.</p>
+
+        <h2>2. The service</h2>
+        <p>Clientix is a brokerage platform: we show marketing agency profiles and let you talk to a broker who recommends the right agency and books meetings. Agencies are independent parties. Any agreement is made directly between you and the agency, we are not a party to it, and we do not guarantee the quality or results of their services.</p>
+
+        <h2>3. Your account</h2>
+        <p>Your details must be accurate. You are responsible for keeping your password private and for all activity under your account. Business accounts are for adults authorised to act for their company.</p>
+
+        <h2>4. Meetings and communication</h2>
+        <p>Meeting requests are subject to the broker's approval, who may accept, decline or cancel them. We may send you reminders and notifications about your meetings and requests.</p>
+
+        <h2>5. Acceptable use</h2>
+        <p>Do not use the platform for anything unlawful, to send spam or malware, to impersonate others, to scrape the platform automatically, or to upload files you have no right to share.</p>
+
+        <h2>6. Content</h2>
+        <p>You keep ownership of what you send and grant us a limited licence to store it and show it to the relevant parties as needed to run the service.</p>
+
+        <h2>7. Agency information</h2>
+        <p>Agency information is managed by the broker for guidance only, may change, and is not a contractual offer.</p>
+
+        <h2>8. Disclaimers and liability</h2>
+        <p>The service is provided "as is" without warranties of any kind. To the maximum extent permitted by law, we are not liable for indirect losses, lost profits or the outcome of dealing with agencies.</p>
+
+        <h2>9. Termination</h2>
+        <p>You may stop using the platform and request deletion of your account at any time. We may suspend or close accounts that breach these Terms.</p>
+
+        <h2>10. Changes and governing law</h2>
+        <p>We may update these Terms and will change the date above. These Terms are governed by the laws of the Arab Republic of Egypt.</p>
+
+        <h2>11. Contact</h2>
+        <p><a href="Clientix0@gmail.com">@mail</a></p>
+    }
+</article>

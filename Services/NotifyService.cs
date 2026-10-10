@@ -17,7 +17,7 @@ public class NotifyService
     private readonly IHttpContextAccessor _http;
 
     // أنواع إشعارات الـ Broker اللي تتبعت Push (الزيارات والدخول كتير فمش بنبعتها)
-    private static readonly HashSet<string> BrokerPush = new() { "register", "meeting", "chat", "reminder" };
+    private static readonly HashSet<string> BrokerPush = new() { "register", "meeting", "chat", "reminder", "request" };
 
     public NotifyService(FirestoreService fs, IHubContext<NotificationsHub> hub, IHubContext<UserHub> userHub,
                          EmailService mail, PushService push, GoogleCalendarService gcal,
@@ -48,7 +48,7 @@ public class NotifyService
                 await _push.SendTo("broker", _t["n." + type], body, link);
 
             var to = _c["Broker:Email"];
-            if (!string.IsNullOrEmpty(to) && (type == "register" || type == "meeting" || type == "reminder"))
+            if (!string.IsNullOrEmpty(to) && (type == "register" || type == "meeting" || type == "reminder" || type == "request"))
                 await _mail.SendCustom(to, _t["n." + type], body, _t["mail.open"], BaseUrl() + link);
         }
         catch { /* الإشعار عمره ما يوقّف حاجة عند المستخدم */ }

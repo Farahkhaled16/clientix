@@ -1,0 +1,74 @@
+﻿@page "/Requests/Mine"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Requests.MineModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["req.mine"]</h1>
+</section>
+
+@if (Model.Sent)
+{
+    <div class="alert ok wide">@T["req.sent.ok"]</div>
+}
+
+<div class="links-bar"><a class="btn" href="/Requests/New">+ @T["req.new"]</a></div>
+
+<div class="req-list">
+    @if (!Model.Items.Any())
+    {
+        <p class="muted" style="text-align:center">@T["req.none"]</p>
+    }
+    @foreach (var r in Model.Items)
+    {
+        <article class="panel req-card">
+            <div class="req-head">
+                <b>@Model.Labels(r)</b>
+                <span class="pill @(r.Status == "new" ? "pending" : r.Status == "matched" ? "approved" : "cancelled")">@T["req.status." + r.Status]</span>
+            </div>
+            <div class="info-bar">
+                <span class="chip">💰 @Model.Budget(r)</span>
+                <span class="chip">⏱ @Model.Timeline(r)</span>
+                @if (!string.IsNullOrEmpty(r.City))
+                {
+                    <span class="chip">📍 @r.City</span>
+                }
+            </div>
+            <p class="muted">@r.Details</p>
+            <time>@AppTime.ToLocal(r.CreatedAt).ToString("d MMM yyyy, h:mm tt", Model.Cult)</time>
+
+            @if (r.Status == "new")
+            {
+                <p class="muted" style="margin-top:10px">⏳ @T["req.waiting"]</p>
+            }
+            @if (r.Status == "matched")
+            {
+                <h3 class="day-label">🎯 @T["req.recommended"]</h3>
+                @if (!string.IsNullOrWhiteSpace(r.BrokerNote))
+                {
+                    <p class="broker-note">💬 @r.BrokerNote</p>
+                }
+                <div class="mini-grid">
+                    @foreach (var id in r.Recommended)
+                    {
+                        if (Model.Pf.TryGetValue(id, out var p))
+                        {
+                            <a class="mini-agency" href="/Agencies/Details?id=@id">
+                                @if (!string.IsNullOrEmpty(p.LogoUrl))
+                                {
+                                    <img class="avatar fade" src="@p.LogoUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="avatar">@(p.CompanyName.Length > 0 ? p.CompanyName.Substring(0, 1) : "?")</div>
+                                }
+                                <div><b>@p.CompanyName</b><span>@p.City</span></div>
+                            </a>
+                        }
+                    }
+                </div>
+            }
+        </article>
+    }
+</div>

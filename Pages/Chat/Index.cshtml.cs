@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using BrokerHub.Models;
 using BrokerHub.Services;
 
 namespace BrokerHub.Pages.Chat;
@@ -8,19 +8,23 @@ namespace BrokerHub.Pages.Chat;
 public class IndexModel : PageModel
 {
     private readonly FirestoreService _fs;
+    private readonly ChatService _chat;
     private readonly Translator _t;
-    public IndexModel(FirestoreService fs, Translator t) { _fs = fs; _t = t; }
+    public IndexModel(FirestoreService fs, ChatService chat, Translator t) { _fs = fs; _chat = chat; _t = t; }
 
     public string ThreadId { get; set; } = "";
-    public List<ChatMessage> Messages { get; set; } = new();
+    public string InitJson { get; set; } = "[]";
     public string? About { get; set; }
     public string Prefill { get; set; } = "";
 
     public async Task OnGetAsync(string? about)
     {
         ThreadId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        Messages = await _fs.GetMessages(ThreadId);
-        await _fs.MarkThreadRead(ThreadId, false);
+
+        var th = await _fs.GetThread(ThreadId);
+        var items = await _chat.History(ThreadId, "business", th);
+        InitJson = JsonSerializer.Serialize(items, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await _fs.MarkThreadSeen(ThreadId, false);
 
         if (!string.IsNullOrEmpty(about))
         {

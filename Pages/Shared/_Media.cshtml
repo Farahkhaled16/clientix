@@ -3,7 +3,7 @@
 
 @if (Model.Kind == "image")
 {
-    <img src="@Model.Url" alt="@Model.Title" />
+    <img class="fade" src="@Model.Url" alt="@Model.Title" loading="lazy" decoding="async" />
 }
 else if (Model.Kind == "video")
 {

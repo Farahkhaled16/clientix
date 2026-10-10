@@ -13,30 +13,41 @@
     @if (Model.Done)
     {
         <div class="alert ok">@T["auth.checkemail"]</div>
-        <p class="form-link"><a href="/Account/Login?role=@Model.Role">@T["auth.login"]</a></p>
+        <p class="form-link"><a href="/Account/Login?role=business">@T["auth.login"]</a></p>
     }
     else
     {
         <form method="post">
-            <input type="hidden" name="role" value="@Model.Role" />
             <label>@T["auth.name"]</label>
             <input type="text" name="name" required />
             <label>@T["auth.email"]</label>
             <input type="email" name="email" required />
             <label>@T["auth.password"]</label>
             <input type="password" name="password" required minlength="6" />
+
+            <label class="accept">
+                <input type="checkbox" name="accept" value="true" required />
+                <span>
+                    @T["auth.accept.pre"]
+                    <a href="/Terms" target="_blank">@T["legal.terms"]</a>
+                    @T["auth.accept.and"]
+                    <a href="/Privacy" target="_blank">@T["legal.privacy"]</a>
+                </span>
+            </label>
+
             <button class="btn" type="submit">@T["auth.register"]</button>
         </form>
 
         <div class="divider"><span>@T["auth.or"]</span></div>
         <a class="btn btn-google"
-           href="/google-login?role=@Model.Role&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">
+           href="/google-login?role=business&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">
             @T["auth.google"]
         </a>
+        <p class="fine-print">@T["auth.google.note"]</p>
 
         <p class="form-link">
             @T["auth.haveaccount"]
-            <a href="/Account/Login?role=@Model.Role&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">@T["auth.login"]</a>
+            <a href="/Account/Login?role=business&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "")">@T["auth.login"]</a>
         </p>
     }
 </div>

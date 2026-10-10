@@ -125,6 +125,8 @@
                 <a href="/Agencies"><span class="q-ico">🏢</span>@T["bz.browse"]</a>
                 <a href="/Meetings/Book"><span class="q-ico">📅</span>@T["agencies.book"]</a>
                 <a href="/Meetings/Mine"><span class="q-ico">🗂️</span>@T["meet.mine"]</a>
+                <a href="/Requests/New"><span class="q-ico">📝</span>@T["req.new"]</a>
+                <a href="/Requests/Mine"><span class="q-ico">🗂️</span>@T["req.mine"]</a>
                 <a href="/Chat"><span class="q-ico">💬</span>@T["bz.chat"]</a>
             </nav>
         </div>
@@ -145,7 +147,7 @@
             <div class="banner"></div>
             @if (!string.IsNullOrEmpty(a.P.LogoUrl))
             {
-                <img class="avatar" src="@a.P.LogoUrl" alt="@title" />
+                <img class="avatar fade" src="@a.P.LogoUrl" alt="@title" loading="lazy" decoding="async" />
             }
             else
             {

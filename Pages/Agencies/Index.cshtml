@@ -2,13 +2,62 @@
 @model BrokerHub.Pages.Agencies.IndexModel
 @inject BrokerHub.Services.Translator T
 
-<section class="hero">
+<section class="hero" style="padding-bottom:12px">
     <h1>@T["agencies.title"]</h1>
 </section>
 
-@if (!Model.Items.Any())
+<form method="get" class="search-bar">
+    <div class="sb-field">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+        <input type="search" name="q" value="@Model.Q" placeholder="@T["search.ph"]" />
+    </div>
+    @if (Model.Cities.Any())
+    {
+        <select name="city" onchange="this.form.submit()" aria-label="@T["search.allcities"]">
+            <option value="">@T["search.allcities"]</option>
+            @foreach (var c in Model.Cities)
+            {
+                <option value="@c" selected="@(string.Equals(c, Model.City, StringComparison.OrdinalIgnoreCase))">@c</option>
+            }
+        </select>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Service))
+    {
+        <input type="hidden" name="service" value="@Model.Service" />
+    }
+    <button class="btn" type="submit">@T["search.go"]</button>
+</form>
+
+@if (Model.TopServices.Any())
 {
-    <p style="text-align:center;color:var(--muted);padding-bottom:80px">@T["agencies.empty"]</p>
+    <div class="chips-row">
+        <a class="fchip @(string.IsNullOrEmpty(Model.Service) ? "on" : "")" href="@Model.Link(null)">@T["search.all"]</a>
+        @foreach (var s in Model.TopServices)
+        {
+            <a class="fchip @(Model.IsOn(s) ? "on" : "")" href="@Model.Link(s)">@s</a>
+        }
+    </div>
+}
+
+@if (Model.Total > 0)
+{
+    <p class="result-count">
+        @Model.Items.Count @T["search.results"]
+        @if (Model.Filtered)
+        {
+            <span> · </span>
+            <a href="/Agencies">@T["search.clear"]</a>
+     }
+    </p>
+}
+
+@if (Model.Total == 0)
+{
+    <p style="text-align:center;color:var(--muted);padding:30px 0 60px">@T["agencies.empty"]</p>
+}
+else if (!Model.Items.Any())
+{
+    <p style="text-align:center;color:var(--muted);padding:30px 0 60px">@T["search.noresults"]</p>
 }
 
 <section class="agency-grid">
@@ -20,14 +69,17 @@
             <div class="banner"></div>
             @if (!string.IsNullOrEmpty(a.P.LogoUrl))
             {
-                <img class="avatar" src="@a.P.LogoUrl" alt="@title" />
+                <img class="avatar fade" src="@a.P.LogoUrl" alt="@title" loading="lazy" decoding="async" />
             }
             else
             {
                 <div class="avatar">@initial</div>
             }
             <h2>@title</h2>
-            @if (!string.IsNullOrEmpty(a.P.City)) { <div class="city">📍 @a.P.City</div> }
+            @if (!string.IsNullOrEmpty(a.P.City))
+            {
+                <div class="city">📍 @a.P.City</div>
+            }
             <p class="about">@(a.P.About.Length > 110 ? a.P.About.Substring(0, 110) + "…" : a.P.About)</p>
             <div class="tags">
                 @foreach (var s in a.P.Services.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -39,3 +91,15 @@
         </article>
     }
 </section>
+
+@if (User.Identity?.IsAuthenticated != true || User.IsInRole("business"))
+{
+    <section class="cta-band">
+        <div>
+            <h2>@T["brief.cta.t"]</h2>
+            <p>@T["brief.cta.d"]</p>
+        </div>
+        <a class="btn btn-white"
+           href="@(User.Identity?.IsAuthenticated == true ? "/Requests/New" : "/Account/Login?role=business&returnUrl=" + Uri.EscapeDataString("/Requests/New"))">@T["brief.cta.btn"]</a>
+    </section>
+}

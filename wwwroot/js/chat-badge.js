@@ -1,13 +1,11 @@
 ﻿(function () {
     if (location.pathname.toLowerCase().startsWith('/chat')) return;
+    if (typeof signalR === 'undefined') return;
 
-    const badge = document.getElementById('chatBadge');
-    const toasts = document.getElementById('toasts');
+    var badge = document.getElementById('chatBadge');
+    var toasts = document.getElementById('toasts');
 
-    const conn = new signalR.HubConnectionBuilder()
-        .withUrl('/hubs/chat')
-        .withAutomaticReconnect()
-        .build();
+    var conn = new signalR.HubConnectionBuilder().withUrl('/hubs/chat').withAutomaticReconnect().build();
 
     conn.on('msg', function (m) {
         if (m.role !== 'broker') return;
@@ -16,12 +14,12 @@
             badge.hidden = false;
         }
         if (toasts) {
-            const el = document.createElement('a');
+            var el = document.createElement('a');
             el.className = 'toast';
             el.href = '/Chat';
             el.innerHTML = '<b></b><span></span>';
             el.querySelector('b').textContent = '💬 ' + (toasts.dataset.chat || '');
-            el.querySelector('span').textContent = m.text;
+            el.querySelector('span').textContent = m.preview || m.text || '';
             toasts.appendChild(el);
             setTimeout(function () { el.remove(); }, 7000);
         }

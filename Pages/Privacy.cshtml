@@ -1,8 +1,103 @@
-﻿@page
-@model PrivacyModel
+﻿@page "/Privacy"
+@inject BrokerHub.Services.Translator T
+@inject Microsoft.Extensions.Configuration.IConfiguration Cfg
 @{
-    ViewData["Title"] = "Privacy Policy";
+    var mail = Cfg["Legal:ContactEmail"] ?? Cfg["Email:User"] ?? "";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<article class="legal">
+    @if (T.IsRtl)
+    {
+        <h1>سياسة الخصوصية</h1>
+        <p class="updated">آخر تحديث: 10 أكتوبر 2026</p>
+
+        <h2>1. من نحن</h2>
+        <p>Clientix منصة تساعد الشركات على اكتشاف وكالات التسويق والتواصل مع وسيط يرشّح لهم الوكالة المناسبة ويرتّب المواعيد. للتواصل بخصوص أي شيء في هذه السياسة: <a href="mailto:@mail">@mail</a></p>
+
+        <h2>2. البيانات التي نجمعها</h2>
+        <ul>
+            <li>بيانات الحساب: الاسم والبريد الإلكتروني، وكلمة المرور (نخزّنها مشفّرة ولا نراها)، أو الاسم والبريد من حساب جوجل إذا سجّلت به.</li>
+            <li>ما تكتبه أو ترفعه داخل المنصة: طلبات الاحتياج، رسائل المحادثة والملفات المرفقة، وطلبات المواعيد.</li>
+            <li>بيانات تقنية: نوع الجهاز والمتصفح، وملفات تعريف الارتباط، ورمز الإشعارات الخاص بجهازك إذا فعّلت الإشعارات.</li>
+        </ul>
+
+        <h2>3. كيف نستخدمها</h2>
+        <p>لتشغيل الخدمة، وإرسال الإشعارات والتذكيرات على الموقع وبالبريد وعلى جهازك، وترتيب المواعيد، وحماية المنصة من إساءة الاستخدام. لا نبيع بياناتك ولا نستخدمها للإعلانات.</p>
+
+        <h2>4. مع من نشاركها</h2>
+        <ul>
+            <li>الوسيط (مدير المنصة) يطّلع على طلباتك ومحادثاتك ومواعيدك لأنه الطرف الذي يخدمك.</li>
+            <li>قد نشارك تفاصيل مناسبة من طلبك مع وكالة بعد موافقتك أو عند حجز ميعاد يخصها.</li>
+            <li>مزوّدو الخدمة الذين يشغّلون المنصة: Google Firebase (تخزين البيانات والإشعارات) ومزوّد البريد الإلكتروني، وGoogle Calendar إذا اخترت ربطه.</li>
+            <li>الجهات الرسمية عندما يلزمنا القانون بذلك.</li>
+        </ul>
+
+        <h2>5. بيانات Google Calendar</h2>
+        <p>إذا ربطت تقويمك، نطلب إذن إدارة الأحداث (calendar.events) لغرض واحد فقط: إضافة المواعيد المؤكدة على Clientix إلى تقويمك وتحديثها أو حذفها إذا تغيّرت. لا نقرأ باقي أحداثك لأي غرض آخر، ولا نستخدم بيانات جوجل للإعلانات ولا ننقلها لجهات أخرى. نخزّن مفتاح الربط مشفّرًا، ويمكنك فصل الربط في أي وقت من صفحة «ربط التقويم» أو من إعدادات حسابك في جوجل. استخدام Clientix للمعلومات المستلمة من Google APIs ونقلها إلى أي تطبيق آخر يلتزم بسياسة بيانات مستخدمي خدمات Google API، بما فيها متطلبات الاستخدام المحدود (Limited Use).</p>
+
+        <h2>6. ملفات تعريف الارتباط والتخزين المحلي</h2>
+        <p>نستخدم ملف الجلسة لتسجيل دخولك، وملف اللغة، وملف زيارة قصير (30 دقيقة) لعدّ الزوار، وتخزينًا محليًا في متصفحك لحفظ الوضع الداكن وتفضيل الإشعارات، وعامل خدمة (Service Worker) لتشغيل التطبيق والإشعارات.</p>
+
+        <h2>7. مدة الاحتفاظ والحذف</h2>
+        <p>نحتفظ ببياناتك طالما حسابك نشط. لطلب حذف حسابك وبياناتك راسلنا على البريد أعلاه وسننفّذ الطلب خلال مدة معقولة، مع الاحتفاظ بما يلزمنا قانونًا.</p>
+
+        <h2>8. الأمان</h2>
+        <p>نستخدم اتصالًا مشفّرًا وتشفير كلمات المرور وصلاحيات وصول محدودة. ولا يوجد نظام آمن بالكامل، فاحرص على سرية كلمة المرور.</p>
+
+        <h2>9. حقوقك</h2>
+        <p>يحق لك طلب الاطلاع على بياناتك أو تصحيحها أو حذفها، وسحب موافقتك في أي وقت.</p>
+
+        <h2>10. الأطفال</h2>
+        <p>المنصة موجّهة للشركات والبالغين ولا تستهدف من هم دون 18 سنة.</p>
+
+        <h2>11. التعديلات</h2>
+        <p>قد نحدّث هذه السياسة، وسنغيّر تاريخ آخر تحديث أعلاه. استمرارك في استخدام المنصة يعني موافقتك على النسخة المحدّثة.</p>
+    }
+    else
+    {
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: October 10, 2026</p>
+
+        <h2>1. Who we are</h2>
+        <p>Clientix is a platform that helps businesses discover marketing agencies and talk to a broker who recommends the right agency and schedules meetings. Contact us about anything in this policy: <a href="mailto:@mail">@mail</a></p>
+
+        <h2>2. Data we collect</h2>
+        <ul>
+            <li>Account data: your name and email, your password (stored hashed, we cannot see it), or your name and email from your Google account if you sign in with it.</li>
+            <li>What you write or upload: project requests, chat messages and attachments, and meeting requests.</li>
+            <li>Technical data: device and browser type, cookies, and your device's notification token if you enable notifications.</li>
+        </ul>
+
+        <h2>3. How we use it</h2>
+        <p>To run the service, send notifications and reminders on the site, by email and to your device, schedule meetings, and protect the platform from abuse. We do not sell your data or use it for advertising.</p>
+
+        <h2>4. Who we share it with</h2>
+        <ul>
+            <li>The broker (the platform administrator) can see your requests, chats and meetings because they serve you.</li>
+            <li>We may share relevant details of your request with an agency with your agreement or when you book a meeting involving it.</li>
+            <li>Service providers that run the platform: Google Firebase (data storage and notifications), our email provider, and Google Calendar if you choose to connect it.</li>
+            <li>Authorities, where the law requires it.</li>
+        </ul>
+
+        <h2>5. Google Calendar data</h2>
+        <p>If you connect your calendar we request permission to manage events (calendar.events) for one purpose only: to add your confirmed Clientix meetings to your calendar and update or remove them if they change. We do not read your other events for any other purpose, we do not use Google data for advertising, and we do not transfer it to others. The connection token is stored encrypted, and you can disconnect at any time from the Calendar page or your Google account settings. Clientix's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.</p>
+
+        <h2>6. Cookies and local storage</h2>
+        <p>We use a session cookie to keep you signed in, a language cookie, a short visit cookie (30 minutes) to count visitors, local storage in your browser for dark mode and notification preferences, and a service worker to power the app and notifications.</p>
+
+        <h2>7. Retention and deletion</h2>
+        <p>We keep your data while your account is active. To request deletion of your account and data, email us at the address above and we will act on it within a reasonable time, keeping only what the law requires.</p>
+
+        <h2>8. Security</h2>
+        <p>We use encrypted connections, hashed passwords and limited access controls. No system is completely secure, so please keep your password private.</p>
+
+        <h2>9. Your rights</h2>
+        <p>You may ask to access, correct or delete your data, and withdraw your consent at any time.</p>
+
+        <h2>10. Children</h2>
+        <p>The platform is for businesses and adults and is not directed at anyone under 18.</p>
+
+        <h2>11. Changes</h2>
+        <p>We may update this policy and will change the date above. Continuing to use the platform means you accept the updated version.</p>
+    }
+</article>

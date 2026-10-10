@@ -9,7 +9,7 @@
     var lang = document.documentElement.lang || 'ar';
     var icons = {
         visit: '👀', register: '🆕', login: '🔑', meeting: '📅', agency: '🏢', chat: '💬',
-        approved: '✅', rejected: '❌', cancelled: '🚫', reminder: '⏰'
+        approved: '✅', rejected: '❌', cancelled: '🚫', reminder: '⏰', request: '📝', recommend: '🎯'
     };
 
     function getBadge() { return parseInt(badge.textContent, 10) || 0; }
@@ -42,6 +42,16 @@
         return a;
     }
 
+    function skeleton() {
+        list.textContent = '';
+        for (var i = 0; i < 3; i++) {
+            var r = document.createElement('div');
+            r.className = 'np-skel';
+            r.innerHTML = '<i class="sk-ico skel"></i><div><i class="sk-line skel"></i><i class="sk-line short skel"></i></div>';
+            list.append(r);
+        }
+    }
+
     function render(items) {
         list.textContent = '';
         if (!items.length) {
@@ -65,10 +75,10 @@
             var data = await r.json();
             render(data.items || []);
             markSeen();
-        } catch (e) { }
+        } catch (e) { render([]); }
     }
 
-    function open() { pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); load(); }
+    function open() { pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); skeleton(); load(); }
     function close() { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
 
     btn.addEventListener('click', function (e) { e.stopPropagation(); pop.hidden ? open() : close(); });
@@ -77,7 +87,6 @@
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
-    // إشعار جديد وصل لحظيًا
     document.addEventListener('clientix-notify', function (e) {
         var n = e.detail;
         if (!pop.hidden) {

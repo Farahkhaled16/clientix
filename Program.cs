@@ -8,11 +8,13 @@ using BrokerHub.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
+
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(
         Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys")))
@@ -28,6 +30,7 @@ builder.Services.AddSingleton<PushService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<NotifyService>();
+builder.Services.AddScoped<ChatService>();
 builder.Services.AddHttpClient<GoogleCalendarService>();
 builder.Services.AddSingleton<FileStorage>();
 builder.Services.AddHttpClient<AutofillService>();
@@ -58,7 +61,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // كاش أسبوع للصور والملفات الثابتة (CSS و JS ليهم ?v= فبيتحدّثوا لوحدهم)
+        if (!app.Environment.IsDevelopment() && ctx.File.Name is not ("manifest.json" or "offline.html"))
+            ctx.Context.Response.Headers.CacheControl = "public,max-age=604800";
+    }
+});
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -174,6 +185,35 @@ app.MapPost("/push/unregister", async (PushReg body, FirestoreService fs) =>
     return Results.Ok();
 }).RequireAuthorization().DisableAntiforgery();
 
+// ---------- الشات: رفع ملفات + قايمة الوكالات للـ picker ----------
+app.MapPost("/chat/upload", async (HttpContext ctx, IFormFile file, string? thread,
+    FileStorage files, ChatService chat) =>
+{
+    var broker = ctx.User.IsInRole("broker");
+    if (!broker && !ctx.User.IsInRole("business")) return Results.Forbid();
+
+    var tid = broker ? thread : ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(tid)) return Results.BadRequest();
+    if (file == null || file.Length == 0 || file.Length > 25 * 1024 * 1024) return Results.BadRequest();
+
+    var saved = await files.Save(file);
+    if (saved == null) return Results.StatusCode(415);
+
+    var name = Path.GetFileName(file.FileName);
+    if (name.Length > 120) name = name[..120];
+
+    var dto = await chat.Post(tid, broker, ctx.User.Identity?.Name ?? "",
+        new ChatMessage { Kind = saved.Value.Kind, MediaUrl = saved.Value.Url, FileName = name });
+    return dto == null ? Results.BadRequest() : Results.Ok();
+}).RequireAuthorization().DisableAntiforgery();
+
+app.MapGet("/chat/agencies", async (FirestoreService fs) =>
+    Results.Json((await fs.GetAllPortfolios())
+        .Where(p => !string.IsNullOrWhiteSpace(p.CompanyName))
+        .OrderBy(p => p.CompanyName)
+        .Select(p => new { id = p.AgencyId, name = p.CompanyName, city = p.City })))
+    .RequireAuthorization(new AuthorizeAttribute { Roles = "broker" });
+
 // ---------- ملف التقويم (.ics) واشتراك التقويم ----------
 app.MapGet("/meetings/ics/{id}", async (string id, HttpContext ctx, FirestoreService fs, Translator t) =>
 {
@@ -266,7 +306,6 @@ app.MapPost("/gcal/disconnect", async (HttpContext ctx, GoogleCalendarService g)
 // ---------- للتجربة فقط (Development) ----------
 if (app.Environment.IsDevelopment())
 {
-    // /dev/remind/{meetingId}?kind=day|hour
     app.MapGet("/dev/remind/{id}", async (string id, string? kind, FirestoreService fs, NotifyService n) =>
     {
         var m = await fs.GetMeeting(id);
@@ -275,7 +314,6 @@ if (app.Environment.IsDevelopment())
         return Results.Ok("sent");
     });
 
-    // بيبعت Push تجريبي ليك بعد 8 ثواني (غيّري التاب أو صغّري المتصفح عشان يظهر)
     app.MapGet("/dev/push", (HttpContext ctx, PushService p) =>
     {
         var uid = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -309,7 +347,15 @@ app.MapGet("/google-callback", async (string? role, string? returnUrl, HttpConte
     var user = await fs.GetUserByEmail(email);
     if (user == null)
     {
-        user = new AppUser { Name = name, Email = email, Role = "business", EmailConfirmed = true, Provider = "google" };
+        user = new AppUser
+        {
+            Name = name,
+            Email = email,
+            Role = "business",
+            EmailConfirmed = true,
+            Provider = "google",
+            AcceptedTermsAt = DateTime.UtcNow
+        };
         await fs.CreateUser(user);
         await notify.Push("register", $"{user.Name} - {user.Email} (Google)");
     }

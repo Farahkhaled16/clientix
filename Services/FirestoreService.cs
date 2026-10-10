@@ -3,7 +3,7 @@ using BrokerHub.Models;
 
 namespace BrokerHub.Services;
 
-public class FirestoreService
+public partial class FirestoreService
 {
     public FirestoreDb Db { get; }
 

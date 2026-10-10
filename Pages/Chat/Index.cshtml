@@ -2,14 +2,15 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
 @model BrokerHub.Pages.Chat.IndexModel
 @inject BrokerHub.Services.Translator T
-@using BrokerHub.Services
 
-<section class="hero chat-hero">
+<section class="hero" style="padding-bottom:10px">
     <h1>@T["chat.title"]</h1>
     <p>@T["chat.sub"]</p>
 </section>
 
-<div class="chat-shell">
+<div id="chatRoot" class="chat-shell" data-thread="@Model.ThreadId"
+     data-t-view="@T["chat.viewagency"]" data-t-file="@T["chat.file"]" data-t-uploading="@T["chat.uploading"]"
+     data-t-fail="@T["chat.uploadfail"]" data-t-toobig="@T["chat.toobig"]" data-t-empty="@T["chat.empty"]">
     <div class="chat-head">
         <div class="avatar sm">B</div>
         <div>
@@ -22,25 +23,21 @@
         }
     </div>
 
-    <div id="chatLog" class="chat-log" data-role="business" data-thread="@Model.ThreadId">
-        @if (!Model.Messages.Any())
-        {
-            <p id="chatEmpty" class="chat-empty">@T["chat.empty"]</p>
-        }
-        @foreach (var m in Model.Messages)
-        {
-            <div class="bubble @(m.SenderRole == "business" ? "me" : "them")">
-                <p>@m.Text</p>
-                <time>@AppTime.ToLocal(m.CreatedAt).ToString("h:mm tt")</time>
-            </div>
-        }
+    <div id="chatLog" class="chat-log"></div>
+
+    <div id="typingBar" class="typing" hidden>
+        <span class="dots"><i></i><i></i><i></i></span><span>@T["chat.typing.broker"]</span>
     </div>
 
     <form id="chatForm" class="chat-form">
+        <input id="chatFile" type="file" hidden accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" />
+        <button id="attachBtn" class="icon-btn" type="button" aria-label="@T["chat.attach"]">📎</button>
         <textarea id="chatInput" rows="1" placeholder="@T["chat.placeholder"]">@Model.Prefill</textarea>
         <button class="btn" type="submit">@T["chat.send"]</button>
     </form>
 </div>
+
+<script type="application/json" id="chatInit">@Html.Raw(Model.InitJson)</script>
 
 @section Scripts {
     <script src="~/js/chat.js" asp-append-version="true"></script>

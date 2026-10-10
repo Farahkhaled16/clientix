@@ -2,9 +2,8 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "broker")]
 @model BrokerHub.Pages.Broker.ChatModel
 @inject BrokerHub.Services.Translator T
-@using BrokerHub.Services
 
-<section class="hero chat-hero">
+<section class="hero" style="padding-bottom:10px">
     <h1>@T["bk.chat"]</h1>
 </section>
 
@@ -32,13 +31,15 @@
         </ul>
     </aside>
 
-    <div class="chat-shell">
-        @if (Model.Current == null)
-        {
-            <p class="chat-empty" style="margin:auto">@T["bk.chat.pick"]</p>
-        }
-        else
-        {
+    @if (Model.Current == null)
+    {
+        <div class="chat-shell"><p class="chat-empty" style="margin:auto">@T["bk.chat.pick"]</p></div>
+    }
+    else
+    {
+        <div id="chatRoot" class="chat-shell" data-thread="@Model.Current.Id"
+             data-t-view="@T["chat.viewagency"]" data-t-file="@T["chat.file"]" data-t-uploading="@T["chat.uploading"]"
+             data-t-fail="@T["chat.uploadfail"]" data-t-toobig="@T["chat.toobig"]" data-t-empty="@T["chat.empty"]">
             <div class="chat-head">
                 <a class="back-link" href="/Broker/Chat"><span class="back-arrow">←</span></a>
                 <div class="avatar sm">@(Model.Current.BusinessName.Length > 0 ? Model.Current.BusinessName.Substring(0, 1) : "?")</div>
@@ -48,22 +49,34 @@
                 </div>
             </div>
 
-            <div id="chatLog" class="chat-log" data-role="broker" data-thread="@Model.Current.Id">
-                @foreach (var m in Model.Messages)
-                {
-                    <div class="bubble @(m.SenderRole == "broker" ? "me" : "them")">
-                        <p>@m.Text</p>
-                        <time>@AppTime.ToLocal(m.CreatedAt).ToString("d MMM, h:mm tt")</time>
-                    </div>
-                }
+            <div id="chatLog" class="chat-log"></div>
+
+            <div id="typingBar" class="typing" hidden>
+                <span class="dots"><i></i><i></i><i></i></span><span>@T["chat.typing.client"]</span>
             </div>
 
             <form id="chatForm" class="chat-form">
+                <input id="chatFile" type="file" hidden accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" />
+                <button id="attachBtn" class="icon-btn" type="button" aria-label="@T["chat.attach"]">📎</button>
+                <button id="agencyBtn" class="icon-btn" type="button" aria-label="@T["chat.pickagency"]">🏢</button>
                 <textarea id="chatInput" rows="1" placeholder="@T["chat.placeholder"]"></textarea>
                 <button class="btn" type="submit">@T["chat.send"]</button>
             </form>
-        }
-    </div>
+        </div>
+
+        <div id="agencyPicker" class="modal" hidden>
+            <div class="modal-card">
+                <div class="modal-head">
+                    <b>@T["chat.pickagency"]</b>
+                    <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+                </div>
+                <input type="search" placeholder="@T["search.ph"]" />
+                <div class="pk-list"></div>
+            </div>
+        </div>
+
+        <script type="application/json" id="chatInit">@Html.Raw(Model.InitJson)</script>
+    }
 </div>
 
 @section Scripts {

@@ -1,0 +1,54 @@
+﻿@page "/Requests/New"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "business")]
+@model BrokerHub.Pages.Requests.NewModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["req.title"]</h1>
+    <p>@T["req.sub"]</p>
+</section>
+
+@if (Model.Error != null)
+{
+    <div class="alert wide">@T[Model.Error]</div>
+}
+
+<div class="form-box wide">
+    <form method="post">
+        <label>@T["req.services"]</label>
+        <div class="check-chips">
+            @foreach (var s in Catalog.Services)
+            {
+                <label class="cchip">
+                    <input type="checkbox" name="services" value="@s.Key" checked="@(Model.Selected.Contains(s.Key))" />
+                    <span>@(T.IsRtl? s.Ar: s.En)</span>
+                </label>
+            }
+        </div>
+
+        <label>@T["req.budget"]</label>
+        <select name="budget">
+            @foreach (var b in Catalog.Budgets)
+            {
+                <option value="@b.Key" selected="@(Model.Budget == b.Key)">@(T.IsRtl? b.Ar: b.En)</option>
+            }
+        </select>
+
+        <label>@T["req.timeline"]</label>
+        <select name="timeline">
+            @foreach (var t in Catalog.Timelines)
+            {
+                <option value="@t.Key" selected="@(Model.Timeline == t.Key)">@(T.IsRtl? t.Ar: t.En)</option>
+            }
+        </select>
+
+        <label>@T["req.city"]</label>
+        <input type="text" name="city" value="@Model.City" maxlength="80" />
+
+        <label>@T["req.details"]</label>
+        <textarea name="details" rows="6" required minlength="20" maxlength="3000" placeholder="@T["req.details.ph"]">@Model.Details</textarea>
+
+        <button class="btn" type="submit">@T["req.submit"]</button>
+    </form>
+</div>

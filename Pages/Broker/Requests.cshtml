@@ -1,0 +1,98 @@
+﻿@page "/Broker/Requests"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "broker")]
+@model BrokerHub.Pages.Broker.RequestsModel
+@inject BrokerHub.Services.Translator T
+@using BrokerHub.Services
+
+<section class="hero" style="padding-bottom:10px">
+    <h1>@T["req.broker.title"]</h1>
+</section>
+
+@if (Model.Msg != null)
+{
+    <div class="alert ok wide">@T[Model.Msg]</div>
+}
+
+<div class="split @(Model.Current != null ? "open" : "")">
+    <aside class="panel split-list">
+        @if (!Model.Items.Any())
+        {
+            <p class="muted">@T["req.none"]</p>
+        }
+        <ul class="threads">
+            @foreach (var x in Model.Items)
+            {
+                <li class="@(Model.Current?.Id == x.Id ? "active" : "")">
+                    <a href="/Broker/Requests?id=@x.Id">
+                        <span class="avatar sm">@(x.BusinessName.Length > 0 ? x.BusinessName.Substring(0, 1) : "?")</span>
+                        <span class="t-info"><b>@x.BusinessName</b><span class="last">@Model.Labels(x)</span></span>
+                        <span class="pill @(x.Status == "new" ? "pending" : x.Status == "matched" ? "approved" : "cancelled")">@T["req.status." + x.Status]</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </aside>
+
+    <div class="split-main">
+        @if (Model.Current == null)
+        {
+            <div class="panel"><p class="chat-empty">@T["req.pick"]</p></div>
+        }
+        else
+        {
+            var r = Model.Current;
+            <div class="panel">
+                <a class="back-link-inline" href="/Broker/Requests">← @T["pf.back"]</a>
+                <div class="req-head">
+                    <h2>@r.BusinessName</h2>
+                    <span class="pill @(r.Status == "new" ? "pending" : r.Status == "matched" ? "approved" : "cancelled")">@T["req.status." + r.Status]</span>
+                </div>
+                <p class="muted">@r.BusinessEmail · @AppTime.ToLocal(r.CreatedAt).ToString("d MMM, h:mm tt", Model.Cult)</p>
+                <div class="info-bar">
+                    <span class="chip">🧩 @Model.Labels(r)</span>
+                    <span class="chip">💰 @Model.BudgetLabel(r)</span>
+                    <span class="chip">⏱ @Model.TimelineLabel(r)</span>
+                    @if (!string.IsNullOrEmpty(r.City))
+                    {
+                        <span class="chip">📍 @r.City</span>
+                    }
+                </div>
+                <p style="white-space:pre-wrap">@r.Details</p>
+                @if (Model.HasThread)
+                {
+                    <a class="btn btn-light btn-sm" href="/Broker/Chat?thread=@r.BusinessId">💬 @T["req.chat"]</a>
+                }
+            </div>
+
+            <form method="post" asp-page-handler="Recommend" class="panel">
+                <input type="hidden" name="id" value="@r.Id" />
+                <h3 class="day-label" style="margin-top:0">🎯 @T["req.recommend.title"]</h3>
+                <div class="cand-list">
+                    @foreach (var c in Model.Cands)
+                    {
+                        <label class="cand">
+                            <input type="checkbox" name="agencyIds" value="@c.Id" checked="@c.Checked" />
+                            <span class="cand-main"><b>@c.Name</b><i>@c.City</i><em>@c.Services</em></span>
+                            @if (c.Score > 0)
+                            {
+                                <span class="pill approved">@T["req.match"]</span>
+                            }
+                        </label>
+                    }
+                </div>
+                <label>@T["req.recommend.note"]</label>
+                <textarea name="note" rows="3">@r.BrokerNote</textarea>
+                <button class="btn" type="submit">@T["req.recommend.send"]</button>
+            </form>
+
+            @if (r.Status != "closed")
+            {
+                <form method="post" asp-page-handler="Close">
+                    <input type="hidden" name="id" value="@r.Id" />
+                    <button class="btn btn-light btn-sm" type="submit">@T["req.close"]</button>
+                </form>
+            }
+        }
+    </div>
+</div>
+<div style="height:60px"></div>
