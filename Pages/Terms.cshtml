@@ -2,7 +2,7 @@
 @inject BrokerHub.Services.Translator T
 @inject Microsoft.Extensions.Configuration.IConfiguration Cfg
 @{
-    var mail = Cfg["Legal:ContactEmail"] ?? Cfg["Email:User"] ?? "";
+    var mail = "Clientix0@gmail.com";
 }
 
 <article class="legal">
@@ -42,7 +42,7 @@
         <p>قد نعدّل هذه الشروط وسنغيّر تاريخ آخر تحديث. تخضع هذه الشروط لقوانين جمهورية مصر العربية.</p>
 
         <h2>11. التواصل</h2>
-        <p><a href="Clientix0@gmail.com">@mail</a></p>
+        <p><a href="mailto:@mail">@mail</a></p>
     }
     else
     {
@@ -80,6 +80,6 @@
         <p>We may update these Terms and will change the date above. These Terms are governed by the laws of the Arab Republic of Egypt.</p>
 
         <h2>11. Contact</h2>
-        <p><a href="Clientix0@gmail.com">@mail</a></p>
+        <p><a href="mailto:@mail">@mail</a></p>
     }
 </article>
